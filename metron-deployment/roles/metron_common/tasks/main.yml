@@ -16,8 +16,8 @@
 #
 ---
 - name: Check OS Version
-  fail: msg="Metron deployment supports CentOS 6 only."
-  when: (ansible_distribution != "CentOS" or ansible_distribution_major_version != "6")
+  fail: msg="Metron deployment supports CentOS 7 only."
+  when: (ansible_distribution != "CentOS" or ansible_distribution_major_version != "7")
 
 - name: Check for Metron jar path
   stat: path={{ metron_jar_path }}
@@ -27,9 +27,9 @@
   fail: msg="Unable to locate staged Metron jars at {{ metron_jar_path }}.  Did you run 'mvn package'?"
   when: metron_jars.stat.exists == True
 
-- name: Ensure iptables is stopped and is not running at boot time.
+- name: Ensure firewalld is stopped and is not running at boot time.
   ignore_errors: yes
   service:
-    name: iptables
+    name: firewalld 
     state: stopped
     enabled: no

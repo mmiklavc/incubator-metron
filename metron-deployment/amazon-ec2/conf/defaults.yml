@@ -42,12 +42,20 @@ xvda_vol_size: 50
 xvdb_vol_size: 100
 xvdc_vol_size: 100
 
+# HDP
+hdp_version: 2.3.2.0
+hdp_repo_def: "http://public-repo-1.hortonworks.com/HDP/centos7/2.x/updates/{{ hdp_version }}/hdp.repo"
+rhel_hdp_utils_install_url: "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.20/repos/centos7/hdp-util.repo"
+
 # ambari
 ambari_host: "{{ groups.ambari_master[0] }}"
 ambari_port: 8080
 ambari_user: admin
 ambari_password: admin
 cluster_type: small_cluster
+rhel_ambari_install_url: "http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.2.2.0/ambari.repo"
+local_tmp_keygen_file: "/tmp/id_rsa.tmp"
+dest_tmp_keygen_file: "/tmp/id_rsa.tmp"
 
 # hbase
 pcap_hbase_table: pcap
@@ -64,6 +72,7 @@ metron_version: 0.1BETA
 metron_directory: /usr/metron/{{ metron_version }}
 java_home: /usr/jdk64/jdk1.8.0_40
 pcapservice_port: 8081
+snort_ipv4_address: "{{ ansible_enp0s3.ipv4.address }}"
 
 # sensors
 install_snort: True
@@ -96,5 +105,5 @@ elasticsearch_data_dir: "/data1/elasticsearch,/data2/elasticsearch"
 install_elasticsearch: True
 install_solr: False
 elasticsearch_transport_port: 9300
-elasticsearch_network_interface: eth0
+elasticsearch_network_interface: enp0s3
 elasticsearch_web_port: 9200
