@@ -24,6 +24,7 @@
     <groupId>org.apache.metron</groupId>
     <artifactId>Metron</artifactId>
     <version>0.1BETA</version>
+    test-B-1
     <packaging>pom</packaging>
     <name>Metron</name>
     <description>Performs release auditing for Metron.</description>
