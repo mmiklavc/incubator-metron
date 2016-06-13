@@ -25,14 +25,16 @@ import backtype.storm.tuple.Tuple;
 import org.apache.metron.common.Constants;
 import org.apache.metron.common.bolt.ConfiguredEnrichmentBolt;
 import org.apache.metron.common.configuration.writer.EnrichmentWriterConfiguration;
-import org.apache.metron.common.utils.MessageUtils;
 import org.apache.metron.common.interfaces.BulkMessageWriter;
+import org.apache.metron.common.utils.MessageUtils;
 import org.apache.metron.common.writer.BulkWriterComponent;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Map;
 
 public class BulkMessageWriterBolt extends ConfiguredEnrichmentBolt {
 
@@ -63,7 +65,14 @@ public class BulkMessageWriterBolt extends ConfiguredEnrichmentBolt {
   @SuppressWarnings("unchecked")
   @Override
   public void execute(Tuple tuple) {
-    JSONObject message = (JSONObject)((JSONObject) tuple.getValueByField("message")).clone();
+    String rawMessage = (String) tuple.getValueByField("message");
+    JSONParser parser = new JSONParser();
+    JSONObject message = null;
+    try {
+      message = (JSONObject) parser.parse(rawMessage);
+    } catch (ParseException e) {
+      throw new RuntimeException("Message failed to parse as JSON: " + e.getMessage(), e);
+    }
     message.put("index." + bulkMessageWriter.getClass().getSimpleName().toLowerCase() + ".ts", "" + System.currentTimeMillis());
     String sensorType = MessageUtils.getSensorType(message);
     try

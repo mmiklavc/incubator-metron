@@ -28,16 +28,15 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
-import org.apache.metron.common.bolt.ConfiguredBolt;
+import org.apache.metron.common.bolt.ConfiguredEnrichmentBolt;
 import org.apache.metron.common.utils.ErrorUtils;
 import org.json.simple.JSONObject;
-import org.apache.metron.common.bolt.ConfiguredEnrichmentBolt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public abstract class JoinBolt<V> extends ConfiguredEnrichmentBolt {
@@ -105,12 +104,7 @@ public abstract class JoinBolt<V> extends ConfiguredEnrichmentBolt {
         && Sets.symmetricDifference(streamMessageKeys, streamIds)
                .isEmpty()
          ) {
-        collector.emit( "message"
-                      , tuple
-                      , new Values( key
-                                  , joinMessages(streamMessageMap)
-                                  )
-                      );
+        emit(tuple, key, streamMessageMap);
         cache.invalidate(key);
         collector.ack(tuple);
       } else {
@@ -128,6 +122,15 @@ public abstract class JoinBolt<V> extends ConfiguredEnrichmentBolt {
       collector.emit("error", new Values(error));
       collector.reportError(e);
     }
+  }
+
+  protected void emit(Tuple tuple, String key, Map<String, V> streamMessageMap) {
+    collector.emit( "message"
+                  , tuple
+                  , new Values( key
+                              , joinMessages(streamMessageMap)
+                              )
+                  );
   }
 
   @Override

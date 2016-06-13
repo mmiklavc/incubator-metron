@@ -21,11 +21,9 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import org.adrianwalker.multilinestring.Multiline;
 import org.apache.metron.common.Constants;
-import org.apache.metron.common.configuration.EnrichmentConfigurations;
 import org.apache.metron.common.configuration.writer.WriterConfiguration;
-import org.apache.metron.test.bolt.BaseEnrichmentBoltTest;
-import org.apache.metron.common.configuration.Configurations;
 import org.apache.metron.common.interfaces.BulkMessageWriter;
+import org.apache.metron.test.bolt.BaseEnrichmentBoltTest;
 import org.hamcrest.Description;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -46,11 +44,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class BulkMessageWriterBoltTest extends BaseEnrichmentBoltTest {
 
@@ -86,24 +80,31 @@ public class BulkMessageWriterBoltTest extends BaseEnrichmentBoltTest {
   private String sampleMessageString;
 
   private JSONObject sampleMessage;
-  private List<JSONObject> messageList;
+  private List<String> messageList;
+  private List<JSONObject> expectedMessageList;
   private List<Tuple> tupleList;
 
   @Before
   public void parseMessages() throws ParseException {
     JSONParser parser = new JSONParser();
     sampleMessage = (JSONObject) parser.parse(sampleMessageString);
-    sampleMessage.put("field", "value1");
     messageList = new ArrayList<>();
-    messageList.add(((JSONObject) sampleMessage.clone()));
+    expectedMessageList = new ArrayList<>();
+    sampleMessage.put("field", "value1");
+    messageList.add(sampleMessage.toJSONString());
+    expectedMessageList.add((JSONObject)sampleMessage.clone());
     sampleMessage.put("field", "value2");
-    messageList.add(((JSONObject) sampleMessage.clone()));
+    messageList.add(sampleMessage.toJSONString());
+    expectedMessageList.add((JSONObject)sampleMessage.clone());
     sampleMessage.put("field", "value3");
-    messageList.add(((JSONObject) sampleMessage.clone()));
+    messageList.add(sampleMessage.toJSONString());
+    expectedMessageList.add((JSONObject)sampleMessage.clone());
     sampleMessage.put("field", "value4");
-    messageList.add(((JSONObject) sampleMessage.clone()));
+    messageList.add((sampleMessage.toJSONString()));
+    expectedMessageList.add((JSONObject)sampleMessage.clone());
     sampleMessage.put("field", "value5");
-    messageList.add(((JSONObject) sampleMessage.clone()));
+    messageList.add(sampleMessage.toJSONString());
+    expectedMessageList.add((JSONObject)sampleMessage.clone());
   }
 
   @Mock
@@ -131,12 +132,12 @@ public class BulkMessageWriterBoltTest extends BaseEnrichmentBoltTest {
       when(tuple.getValueByField("message")).thenReturn(messageList.get(i));
       tupleList.add(tuple);
       bulkMessageWriterBolt.execute(tuple);
-      verify(bulkMessageWriter, times(0)).write(eq(sensorType), any(WriterConfiguration.class), eq(tupleList), eq(messageList));
+      verify(bulkMessageWriter, times(0)).write(eq(sensorType), any(WriterConfiguration.class), eq(tupleList), eq(expectedMessageList));
     }
     when(tuple.getValueByField("message")).thenReturn(messageList.get(4));
     tupleList.add(tuple);
     bulkMessageWriterBolt.execute(tuple);
-    verify(bulkMessageWriter, times(1)).write(eq(sensorType), any(WriterConfiguration.class), eq(tupleList), argThat(new MessageListMatcher(messageList)));
+    verify(bulkMessageWriter, times(1)).write(eq(sensorType), any(WriterConfiguration.class), eq(tupleList), argThat(new MessageListMatcher(expectedMessageList)));
     verify(outputCollector, times(5)).ack(tuple);
     reset(outputCollector);
     doThrow(new Exception()).when(bulkMessageWriter).write(eq(sensorType), any(WriterConfiguration.class), Matchers.anyListOf(Tuple.class), Matchers.anyListOf(JSONObject.class));

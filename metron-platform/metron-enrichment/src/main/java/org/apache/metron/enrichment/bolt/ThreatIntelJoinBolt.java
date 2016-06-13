@@ -17,8 +17,9 @@
  */
 package org.apache.metron.enrichment.bolt;
 
+import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 import com.google.common.base.Joiner;
-import org.apache.metron.common.Constants;
 import org.apache.metron.common.configuration.enrichment.SensorEnrichmentConfig;
 import org.apache.metron.common.configuration.enrichment.threatintel.ThreatTriageConfig;
 import org.apache.metron.common.utils.MessageUtils;
@@ -49,6 +50,16 @@ public class ThreatIntelJoinBolt extends EnrichmentJoinBolt {
       LOG.error("Unable to retrieve sensor config: " + sourceType);
       return null;
     }
+  }
+
+  @Override
+  protected void emit(Tuple tuple, String key, Map<String, JSONObject> streamMessageMap) {
+    collector.emit( "message"
+            , tuple
+            , new Values( key
+                    , joinMessages(streamMessageMap).toJSONString()
+            )
+    );
   }
 
   @Override
