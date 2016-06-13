@@ -80,7 +80,7 @@ public class BulkMessageWriterBolt extends ConfiguredEnrichmentBolt {
       writerComponent.write(sensorType, tuple, message, bulkMessageWriter, new EnrichmentWriterConfiguration(getConfigurations()));
     }
     catch(Exception e) {
-      throw new RuntimeException("This should have been caught in the writerComponent.  If you see this, file a JIRA");
+      throw new RuntimeException("This should have been caught in the writerComponent.  If you see this, file a JIRA", e);
     }
   }
 
