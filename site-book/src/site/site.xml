@@ -52,40 +52,50 @@
         </head>
 
         <breadcrumbs position="left">
-
-<item name="Metron" href="index.html" title="Apache Metron - Incubating" />
-<item name="Analytics" href="metron-analytics/Analytics.html"/>
-<item name="MAAS_Service" href="metron-analytics/metron-maas-service/MAAS_Service.html"/>
-<item name="Profiler" href="metron-analytics/metron-profiler/Profiler.html"/>
-<item name="Profiler_Client" href="metron-analytics/metron-profiler-client/Profiler_Client.html"/>
-<item name="Statistics" href="metron-analytics/metron-statistics/Statistics.html"/>
-<item name="Deployment" href="metron-deployment/Deployment.html"/>
-<item name="Amazon_Ec2" href="metron-deployment/amazon-ec2/Amazon_Ec2.html"/>
-<item name="Ansible_Docker" href="metron-deployment/packaging/docker/ansible-docker/Ansible_Docker.html"/>
-<item name="Rpm_Docker" href="metron-deployment/packaging/docker/rpm-docker/Rpm_Docker.html"/>
-<item name="Packer_Build" href="metron-deployment/packer-build/Packer_Build.html"/>
-<item name="Kibana" href="metron-deployment/roles/kibana/Kibana.html"/>
-<item name="Monit" href="metron-deployment/roles/monit/Monit.html"/>
-<item name="Opentaxii" href="metron-deployment/roles/opentaxii/Opentaxii.html"/>
-<item name="Pcap_Replay" href="metron-deployment/roles/pcap_replay/Pcap_Replay.html"/>
-<item name="Sensor_Test_Mode" href="metron-deployment/roles/sensor-test-mode/Sensor_Test_Mode.html"/>
-<item name="Codelab_Platform" href="metron-deployment/vagrant/codelab-platform/Codelab_Platform.html"/>
-<item name="Fastcapa_Test_Platform" href="metron-deployment/vagrant/fastcapa-test-platform/Fastcapa_Test_Platform.html"/>
-<item name="Full_Dev_Platform" href="metron-deployment/vagrant/full-dev-platform/Full_Dev_Platform.html"/>
-<item name="Quick_Dev_Platform" href="metron-deployment/vagrant/quick-dev-platform/Quick_Dev_Platform.html"/>
-<item name="Platform" href="metron-platform/Platform.html"/>
-<item name="Api" href="metron-platform/metron-api/Api.html"/>
-<item name="Common" href="metron-platform/metron-common/Common.html"/>
-<item name="Data_Management" href="metron-platform/metron-data-management/Data_Management.html"/>
-<item name="Enrichment" href="metron-platform/metron-enrichment/Enrichment.html"/>
-<item name="Indexing" href="metron-platform/metron-indexing/Indexing.html"/>
-<item name="Management" href="metron-platform/metron-management/Management.html"/>
-<item name="Parsers" href="metron-platform/metron-parsers/Parsers.html"/>
-<item name="Pcap_Backend" href="metron-platform/metron-pcap-backend/Pcap_Backend.html"/>
-<item name="Fastcapa" href="metron-sensors/fastcapa/Fastcapa.html"/>
-<item name="Pycapa" href="metron-sensors/pycapa/Pycapa.html"/>
-
         </breadcrumbs>
+
+	<menu name="User Documentation">
+	  <item name="Metron" href="index.html" title="Apache Metron - Incubating" />
+	  <item name="Analytics" href="metron-analytics/Analytics.html" collapse="true">
+	    <item name="MAAS_Service" href="metron-analytics/metron-maas-service/MAAS_Service.html"/>
+	    <item name="Profiler" href="metron-analytics/metron-profiler/Profiler.html"/>
+	    <item name="Profiler_Client" href="metron-analytics/metron-profiler-client/Profiler_Client.html"/>
+	    <item name="Statistics" href="metron-analytics/metron-statistics/Statistics.html"/>
+	  </item>
+	  <item name="Deployment" href="metron-deployment/Deployment.html" collapse="true">
+	    <item name="Amazon_Ec2" href="metron-deployment/amazon-ec2/Amazon_Ec2.html"/>
+	    <item name="Ansible_Docker" href="metron-deployment/packaging/docker/ansible-docker/Ansible_Docker.html"/>
+	    <item name="Rpm_Docker" href="metron-deployment/packaging/docker/rpm-docker/Rpm_Docker.html"/>
+	    <item name="Packer_Build" href="metron-deployment/packer-build/Packer_Build.html"/>
+	    <item name="Roles" collapse="true">
+	      <item name="Kibana" href="metron-deployment/roles/kibana/Kibana.html"/>
+	      <item name="Monit" href="metron-deployment/roles/monit/Monit.html"/>
+	      <item name="Opentaxii" href="metron-deployment/roles/opentaxii/Opentaxii.html"/>
+	      <item name="Pcap_Replay" href="metron-deployment/roles/pcap_replay/Pcap_Replay.html"/>
+	      <item name="Sensor_Test_Mode" href="metron-deployment/roles/sensor-test-mode/Sensor_Test_Mode.html"/>
+	    </item>
+	    <item name="Vagrant" collapse="true">
+	      <item name="Codelab_Platform" href="metron-deployment/vagrant/codelab-platform/Codelab_Platform.html"/>
+	      <item name="Fastcapa_Test_Platform" href="metron-deployment/vagrant/fastcapa-test-platform/Fastcapa_Test_Platform.html"/>
+	      <item name="Full_Dev_Platform" href="metron-deployment/vagrant/full-dev-platform/Full_Dev_Platform.html"/>
+	      <item name="Quick_Dev_Platform" href="metron-deployment/vagrant/quick-dev-platform/Quick_Dev_Platform.html"/>
+	    </item>
+	  </item>
+	  <item name="Platform" href="metron-platform/Platform.html" collapse="true">
+	    <item name="Api" href="metron-platform/metron-api/Api.html"/>
+	    <item name="Common" href="metron-platform/metron-common/Common.html"/>
+	    <item name="Data_Management" href="metron-platform/metron-data-management/Data_Management.html"/>
+	    <item name="Enrichment" href="metron-platform/metron-enrichment/Enrichment.html"/>
+	    <item name="Indexing" href="metron-platform/metron-indexing/Indexing.html"/>
+	    <item name="Management" href="metron-platform/metron-management/Management.html"/>
+	    <item name="Parsers" href="metron-platform/metron-parsers/Parsers.html"/>
+	    <item name="Pcap_Backend" href="metron-platform/metron-pcap-backend/Pcap_Backend.html"/>
+	  </item>
+	  <item name="Sensors" collapse="true">
+	    <item name="Fastcapa" href="metron-sensors/fastcapa/Fastcapa.html"/>
+	    <item name="Pycapa" href="metron-sensors/pycapa/Pycapa.html"/>
+	  </item>
+	</menu>
 
         <footer>
             Â© 2015-2016 The Apache Software Foundation. Apache Metron, Metron, Apache, the Apache feather logo,
