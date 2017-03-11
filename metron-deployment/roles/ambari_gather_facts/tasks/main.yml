@@ -195,7 +195,7 @@
 
 - name: "Ask Ambari: metron_hosts"
   uri:
-    url: "http://{{ groups.ambari_master[0] }}:{{ ambari_port }}/api/v1/clusters/{{ cluster_name }}/services/METRON/components/METRON_INDEXING"
+    url: "http://{{ groups.ambari_master[0] }}:{{ ambari_port }}/api/v1/clusters/{{ cluster_name }}/services/METRON/components/METRON_PARSERS"
     user: "{{ ambari_user }}"
     password: "{{ ambari_password }}"
     force_basic_auth: yes

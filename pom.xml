@@ -27,9 +27,9 @@
     <modules>
             <module>metron-analytics</module>
             <module>metron-platform</module>
-            <module>metron-deployment</module>
             <module>metron-docker</module>
             <module>metron-interface</module>
+            <module>metron-deployment</module>
     </modules>
 
     <repositories>
@@ -68,8 +68,8 @@
         <base_storm_version>1.0.1</base_storm_version>
         <base_flux_version>1.0.1</base_flux_version>
         <base_kafka_version>0.10.0.1</base_kafka_version>
-        <base_hadoop_version>2.7.1</base_hadoop_version>
-        <base_hbase_version>1.1.1</base_hbase_version>
+        <base_hadoop_version>2.7.3</base_hadoop_version>
+        <base_hbase_version>1.1.2</base_hbase_version>
         <global_accumulo_version>1.8.0</global_accumulo_version>
         <base_flume_version>1.5.2</base_flume_version>
         <!-- full dependency versions -->
@@ -104,12 +104,89 @@
 
     <profiles>
         <profile>
-            <id>HDP-2.5.0.0</id>
+            <id>HDP-2.5.3.0</id>
             <properties>
-                <hdp_version>2.5.0.0</hdp_version>
-                <build_number>1245</build_number>
+                <hdp_version>2.5.3.0</hdp_version>
+                <build_number>37</build_number>
                 <global_storm_version>${base_storm_version}.${hdp_version}-${build_number}</global_storm_version>
+                <global_kafka_version>0.10.0.${hdp_version}-${build_number}</global_kafka_version>
+                <global_hadoop_version>${base_hadoop_version}.${hdp_version}-${build_number}</global_hadoop_version>
+                <global_hbase_version>${base_hbase_version}.${hdp_version}-${build_number}</global_hbase_version>
             </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.mockito</groupId>
+                        <artifactId>mockito-core</artifactId>
+                        <version>${global_mockito_version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.storm</groupId>
+                        <artifactId>storm-kafka</artifactId>
+                        <version>1.0.1.2.5.3.0-37</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.hbase</groupId>
+                        <artifactId>hbase-common</artifactId>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.mortbay.jetty</groupId>
+                                <artifactId>jetty-util</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.hbase</groupId>
+                        <artifactId>hbase-server</artifactId>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.mortbay.jetty</groupId>
+                                <artifactId>jetty-sslengine</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.mortbay.jetty</groupId>
+                                <artifactId>jetty-util</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.hbase</groupId>
+                        <artifactId>hbase-testing-util</artifactId>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.mortbay.jetty</groupId>
+                                <artifactId>jetty-sslengine</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-common</artifactId>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.mortbay.jetty</groupId>
+                                <artifactId>jetty</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.mortbay.jetty</groupId>
+                                <artifactId>jetty-util</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            <dependencies>
+                <dependency>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jetty</artifactId>
+                    <version>6.1.26</version>
+                 </dependency>
+                <dependency>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jetty-util</artifactId>
+                    <version>6.1.26</version>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 
@@ -123,7 +200,7 @@
             <dependency>
                 <groupId>org.apache.storm</groupId>
                 <artifactId>storm-kafka</artifactId>
-                <version>${global_storm_version}</version>
+                <version>1.0.1.2.5.3.0-37</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -276,6 +353,29 @@
                         <exclude>**/wait-for-it.sh</exclude>
 			<exclude>**/*.out</exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${global_shade_version}</version>
+                <configuration>
+                    <createDependencyReducedPom>true</createDependencyReducedPom>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <artifactSet>
+                        <excludes>
+                            <exclude>*slf4j*</exclude>
+                        </excludes>
+                    </artifactSet>
                 </configuration>
             </plugin>
         </plugins>

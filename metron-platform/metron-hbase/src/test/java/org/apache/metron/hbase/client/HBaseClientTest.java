@@ -78,6 +78,8 @@ public class HBaseClientTest {
     Configuration config = HBaseConfiguration.create();
     config.set("hbase.master.hostname", "localhost");
     config.set("hbase.regionserver.hostname", "localhost");
+    String filesystem = config.get("fs.default.name");
+    System.out.println(filesystem);
     util = new HBaseTestingUtility(config);
     util.startMiniCluster();
   }

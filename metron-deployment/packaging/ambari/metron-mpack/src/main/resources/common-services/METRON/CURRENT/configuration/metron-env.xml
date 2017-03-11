@@ -71,6 +71,12 @@
         <display-name>Topic Retention</display-name>
     </property>
     <property>
+        <name>kafka_security_protocol</name>
+        <description>PLAINTEXT or PLAINTEXTSASL</description>
+        <display-name>Kafka Security Protocol</display-name>
+        <value>PLAINTEXT</value>
+    </property>
+    <property>
         <name>parsers</name>
         <value>bro,snort,yaf</value>
         <description>Metron parsers to deploy</description>

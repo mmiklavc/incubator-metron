@@ -25,6 +25,7 @@ import time
 
 from resource_management.core.logger import Logger
 from resource_management.core.resources.system import Execute, File
+from resource_management.libraries.functions.format import format as ambari_format
 
 import metron_service
 
@@ -125,11 +126,13 @@ class ParserCommands:
         start_cmd_template = """{0}/bin/start_parser_topology.sh \
                                     -k {1} \
                                     -z {2} \
-                                    -s {3}"""
+                                    -s {3} \
+                                    -esc {4}"""
         for parser in self.get_parser_list():
             Logger.info('Starting ' + parser)
             Execute(start_cmd_template.format(self.__params.metron_home, self.__params.kafka_brokers,
-                                              self.__params.zookeeper_quorum, parser))
+                                              self.__params.zookeeper_quorum, parser,
+                                              ambari_format("{metron_config_path}/extra_config.json")))
 
         Logger.info('Finished starting parser topologies')
 

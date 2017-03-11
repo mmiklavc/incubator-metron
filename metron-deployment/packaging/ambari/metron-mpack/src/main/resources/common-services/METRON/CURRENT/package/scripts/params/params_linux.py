@@ -169,3 +169,6 @@ error_index_path = tmp_dir + "/error_index.template"
 
 # Zeppelin Notebooks
 metron_config_zeppelin_path = format("{metron_config_path}/zeppelin")
+
+#kafka_security
+kafka_security_protocol = config['configurations']['metron-env']['kafka_security_protocol']

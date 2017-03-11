@@ -60,6 +60,7 @@ public class KafkaWriterTest {
     Assert.assertEquals(producerConfigs.get("key.serializer"), "org.apache.kafka.common.serialization.StringSerializer");
     Assert.assertEquals(producerConfigs.get("value.serializer"), "org.apache.kafka.common.serialization.StringSerializer");
     Assert.assertEquals(producerConfigs.get("request.required.acks"), 1);
+    Assert.assertEquals(producerConfigs.get("security.protocol"),"PLAINTEXT");
     Assert.assertEquals(producerConfigs.get("key1"), 1);
     Assert.assertEquals(producerConfigs.get("key2"), "value2");
   }
@@ -82,7 +83,23 @@ public class KafkaWriterTest {
     Assert.assertEquals(producerConfigs.get("key.serializer"), "org.apache.kafka.common.serialization.StringSerializer");
     Assert.assertEquals(producerConfigs.get("value.serializer"), "org.apache.kafka.common.serialization.StringSerializer");
     Assert.assertEquals(producerConfigs.get("request.required.acks"), 1);
+    Assert.assertEquals(producerConfigs.get("security.protocol"),"PLAINTEXT");
     Assert.assertEquals(producerConfigs.get("key1"), 1);
     Assert.assertEquals(producerConfigs.get("key2"), "value2");
+  }
+
+  @Test
+  public void testSetSecurityPrefix() throws Exception {
+    KafkaWriter writer = new KafkaWriter();
+    WriterConfiguration configuration = createConfiguration(
+            new HashMap<String, Object>() {{
+                put("kafka.securityProtocol" , "SECURITY_PROTOCOL");
+            }}
+    );
+
+    writer.configure(SENSOR_TYPE, configuration);
+    Map<String, Object> producerConfigs = writer.createProducerConfigs();
+    Assert.assertEquals(producerConfigs.get("security.protocol"),"SECURITY_PROTOCOL");
+
   }
 }

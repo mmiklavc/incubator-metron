@@ -43,7 +43,8 @@ public class KafkaWriter extends AbstractWriter implements MessageWriter<JSONObj
     ,VALUE_SERIALIZER("kafka.valueSerializer")
     ,REQUIRED_ACKS("kafka.requiredAcks")
     ,TOPIC("kafka.topic")
-    ,PRODUCER_CONFIGS("kafka.producerConfigs");
+    ,PRODUCER_CONFIGS("kafka.producerConfigs")
+    ,SECURITY_PROTOCOL("kafka.securityProtocol");
     ;
     String key;
     Configurations(String key) {
@@ -69,6 +70,7 @@ public class KafkaWriter extends AbstractWriter implements MessageWriter<JSONObj
   private String configPrefix = null;
   private String zkQuorum = null;
   private Map<String, Object> producerConfigs = new HashMap<>();
+  private String securityProtocol = "PLAINTEXT";
 
   public KafkaWriter() {}
 
@@ -109,6 +111,11 @@ public class KafkaWriter extends AbstractWriter implements MessageWriter<JSONObj
     return this;
   }
 
+  public KafkaWriter withSecurityProtocol(String securityProtocol) {
+    this.securityProtocol = securityProtocol;
+    return this;
+  }
+
   public Optional<String> getConfigPrefix() {
     return Optional.ofNullable(configPrefix);
   }
@@ -140,6 +147,12 @@ public class KafkaWriter extends AbstractWriter implements MessageWriter<JSONObj
     if(topic != null) {
       withTopic(topic);
     }
+
+    String securityProtocol = Configurations.SECURITY_PROTOCOL.getAndConvert(getConfigPrefix(), configMap, String.class);
+    if( securityProtocol != null) {
+      withSecurityProtocol(securityProtocol);
+    }
+
     Map<String, Object> producerConfigs = (Map)Configurations.PRODUCER_CONFIGS.get(getConfigPrefix(), configMap);
     if(producerConfigs != null) {
       withProducerConfigs(producerConfigs);
@@ -152,6 +165,7 @@ public class KafkaWriter extends AbstractWriter implements MessageWriter<JSONObj
     producerConfig.put("key.serializer", keySerializer);
     producerConfig.put("value.serializer", valueSerializer);
     producerConfig.put("request.required.acks", requiredAcks);
+    producerConfig.put("security.protocol", securityProtocol);
     producerConfig.putAll(producerConfigs == null?new HashMap<>():producerConfigs);
     return producerConfig;
   }

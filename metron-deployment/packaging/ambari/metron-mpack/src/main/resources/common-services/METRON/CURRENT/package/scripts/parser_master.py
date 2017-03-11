@@ -20,6 +20,9 @@ limitations under the License.
 from resource_management.core.exceptions import ComponentIsNotRunning
 from resource_management.core.logger import Logger
 from resource_management.libraries.script import Script
+from resource_management.core.resources.system import File
+from resource_management.core.source import Template
+from resource_management.libraries.functions.format import format as ambari_format
 
 import metron_service
 from parser_commands import ParserCommands
@@ -47,6 +50,12 @@ class ParserMaster(Script):
             commands.init_parsers()
             commands.init_kafka_topics()
             commands.set_configured()
+
+        File(ambari_format("{metron_config_path}/extra_config.json"),
+             content=Template("extra_config.json.j2"),
+             owner=params.metron_user,
+             group=params.metron_group
+             )
 
     def start(self, env, upgrade_type=None):
         from params import params

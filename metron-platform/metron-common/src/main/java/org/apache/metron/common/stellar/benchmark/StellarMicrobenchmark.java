@@ -30,7 +30,7 @@ import org.apache.metron.common.dsl.ParseException;
 import org.apache.metron.common.dsl.StellarFunctions;
 import org.apache.metron.common.utils.JSONUtils;
 import org.apache.metron.common.utils.cli.OptionHandler;
-import scala.testing.Benchmark;
+//import scala.testing.Benchmark;
 
 import javax.annotation.Nullable;
 import java.io.File;

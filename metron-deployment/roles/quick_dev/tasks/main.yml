@@ -26,8 +26,8 @@
     component_name: "{{ item }}"
     component_host: "{{ inventory_hostname }}"
   with_items:
-    - METRON_ENRICHMENT_MASTER
-    - METRON_INDEXING
+#    - METRON_ENRICHMENT_MASTER
+#    - METRON_INDEXING
     - METRON_PARSERS
 
 - name: Remove the Metron packages
@@ -54,8 +54,8 @@
     component_host: "{{ inventory_hostname }}"
     wait_for_complete: True
   with_items:
-    - METRON_ENRICHMENT_MASTER
-    - METRON_INDEXING
+#    - METRON_ENRICHMENT_MASTER
+#    - METRON_INDEXING
     - METRON_PARSERS
 
 - name: Start the ambari cluster

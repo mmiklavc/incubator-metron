@@ -36,6 +36,7 @@ public enum SpoutConfigOptions implements SpoutConfigFunction {
   maxOffsetBehind( (config, val) -> config.maxOffsetBehind = convertVal(val, Long.class)),
   metricsTimeBucketSizeInSecs( (config, val) -> config.metricsTimeBucketSizeInSecs = convertVal(val, Integer.class)),
   socketTimeoutMs( (config, val) -> config.socketTimeoutMs = convertVal(val, Integer.class)),
+  securityProtocol( (config, val) -> config.securityProtocol = convertVal(val, String.class)),
   ;
 
   SpoutConfigFunction  spoutConfigFunc;
