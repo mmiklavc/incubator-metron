@@ -87,7 +87,7 @@ configurations:
       log.dirs: '{{ kafka_log_dirs }}'
       delete.topic.enable: "true"
   - metron-env:
-      parsers: "bro"
+      parsers: "bro,snort,yaf"
   - elastic-site:
       index_number_of_shards: 1
       index_number_of_replicas: 0

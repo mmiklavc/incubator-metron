@@ -57,6 +57,24 @@ class ParserMaster(Script):
              group=params.metron_group
              )
 
+        File(ambari_format("{metron_config_path}/zookeeper/parsers/bro.json"),
+             content=Template("bro.json.j2"),
+             owner=params.metron_user,
+             group=params.metron_group
+             )
+
+        File(ambari_format("{metron_config_path}/zookeeper/parsers/snort.json"),
+             content=Template("snort.json.j2"),
+             owner=params.metron_user,
+             group=params.metron_group
+             )
+
+        File(ambari_format("{metron_config_path}/zookeeper/parsers/yaf.json"),
+             content=Template("yaf.json.j2"),
+             owner=params.metron_user,
+             group=params.metron_group
+             )
+
     def start(self, env, upgrade_type=None):
         from params import params
         env.set_params(params)
