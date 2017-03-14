@@ -79,15 +79,8 @@ public class GrokParser implements MessageParser<JSONObject>, Serializable {
   }
 
   public InputStream openInputStream(String streamName) throws IOException {
-
-    Configuration conf = new Configuration();
-
-    UserGroupInformation.setConfiguration(conf);
-    UserGroupInformation.loginUserFromKeytab("hdfs-metron_cluster@EXAMPLE.COM","/etc/security/keytabs/hdfs.headless.keytab");
-
-    FileSystem fs = FileSystem.get(conf);
+    FileSystem fs = FileSystem.get(new Configuration());
     Path path = new Path(streamName);
-
     if(fs.exists(path)) {
       return fs.open(path);
     } else {
