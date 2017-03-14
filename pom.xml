@@ -221,6 +221,16 @@
                 <artifactId>storm-kafka</artifactId>
                 <version>1.0.1.2.5.3.0-37</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-hdfs</artifactId>
+                <version>${global_storm_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-hbase</artifactId>
+                <version>${global_storm_version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>

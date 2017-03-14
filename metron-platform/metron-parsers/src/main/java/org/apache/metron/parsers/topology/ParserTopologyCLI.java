@@ -35,10 +35,7 @@ import org.apache.metron.parsers.topology.config.ConfigHandlers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Function;
 
 public class ParserTopologyCLI {
@@ -307,6 +304,10 @@ public class ParserTopologyCLI {
               spoutConfig
       );
       Config stormConf = ParserOptions.getConfig(cmd);
+
+      List<String> ac = new ArrayList<>();
+      ac.add("org.apache.storm.hdfs.common.security.AutoHDFS");
+      stormConf.put(Config.TOPOLOGY_AUTO_CREDENTIALS,ac);
 
       if (ParserOptions.TEST.has(cmd)) {
         stormConf.put(Config.TOPOLOGY_DEBUG, true);

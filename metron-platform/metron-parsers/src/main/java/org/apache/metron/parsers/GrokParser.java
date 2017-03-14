@@ -24,6 +24,7 @@ import oi.thekraken.grok.api.Match;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.metron.common.Constants;
 import org.apache.metron.parsers.interfaces.MessageParser;
 import org.json.simple.JSONObject;
@@ -78,8 +79,15 @@ public class GrokParser implements MessageParser<JSONObject>, Serializable {
   }
 
   public InputStream openInputStream(String streamName) throws IOException {
-    FileSystem fs = FileSystem.get(new Configuration());
+
+    Configuration conf = new Configuration();
+
+    UserGroupInformation.setConfiguration(conf);
+    UserGroupInformation.loginUserFromKeytab("hdfs-metron_cluster@EXAMPLE.COM","/etc/security/keytabs/hdfs.headless.keytab");
+
+    FileSystem fs = FileSystem.get(conf);
     Path path = new Path(streamName);
+
     if(fs.exists(path)) {
       return fs.open(path);
     } else {
