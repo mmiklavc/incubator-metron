@@ -50,6 +50,9 @@ class ParserMaster(Script):
             commands.init_parsers()
             commands.init_kafka_topics()
             commands.set_configured()
+        if params.security_enabled and not commands.is_acl_configured():
+            commands.init_kafka_acls()
+            commands.set_acl_configured()
 
         File(ambari_format("{metron_config_path}/extra_config.json"),
              content=Template("extra_config.json.j2"),
