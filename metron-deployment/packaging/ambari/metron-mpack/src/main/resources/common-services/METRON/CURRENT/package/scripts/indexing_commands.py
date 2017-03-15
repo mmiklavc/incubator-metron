@@ -143,14 +143,14 @@ class IndexingCommands:
         Logger.info('Creating HDFS indexing directory')
         if self.__params.security_enabled:
             kinit(self.__params.kinit_path_local,
-                  self.__params.metron_keytab_path,
-                  self.__params.metron_jaas_principal,
-                  self.__params.metron_user)
+                  self.__params.storm_keytab_path,
+                  self.__params.storm_principal_name,
+                  self.__params.storm_user)
 
         self.__params.HdfsResource(self.__params.metron_apps_indexed_hdfs_dir,
                                    type="directory",
                                    action="create_on_execute",
-                                   owner=self.__params.metron_user,
+                                   owner=self.__params.storm_user,
                                    mode=0775,
                                    )
         Logger.info('Done creating HDFS indexing directory')
