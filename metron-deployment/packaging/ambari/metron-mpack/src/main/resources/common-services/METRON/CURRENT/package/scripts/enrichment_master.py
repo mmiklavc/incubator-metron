@@ -31,7 +31,7 @@ class Enrichment(Script):
         commands = EnrichmentCommands(params)
         commands.setup_repo()
         self.install_packages(env)
-        self.configure(env)
+
 
     def configure(self, env, upgrade_type=None, config_dir=None):
         from params import params
@@ -56,8 +56,8 @@ class Enrichment(Script):
     def start(self, env, upgrade_type=None):
         from params import params
         env.set_params(params)
-
-        self.configure()
+        commands = EnrichmentCommands(params)
+        self.configure(env)
 
         commands.start_enrichment_topology()
 

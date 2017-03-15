@@ -149,16 +149,8 @@ class EnrichmentCommands:
         if self.__params.security_enabled:
             kinit(self.__params.kinit_path_local,
                   self.__params.kafka_keytab_path,
-                  self.__params.kafka_principal_name,
-                  self.__params.kafka_user)
-            # kinit_lock = global_lock.get_lock(global_lock.LOCK_TYPE_KERBEROS)
-            # kinit_lock.acquire()
-            # kinitcmd = ambari_format("{kinit_path_local} -kt {kafka_keytab_path} {kafka_principal_name}; ")
-            # Logger.info("kinit command: " + kinitcmd)
-            # try:
-            #     Execute(kinitcmd, user=self.__params.kafka_user)
-            # finally:
-            #     kinit_lock.release()
+                  self.__params.kafka_principal_name)
+
 
         topic_template = """{0}/kafka-topics.sh \
                                 --zookeeper {1} \
@@ -189,13 +181,11 @@ class EnrichmentCommands:
                                           topic,
                                           num_partitions,
                                           replication_factor,
-                                          retention_bytes),
-                    user=self.__params.kafka_user)
+                                          retention_bytes))
             Execute(acl_template.format(self.__params.kafka_bin_dir,
                                         self.__params.zookeeper_quorum,
                                         self.__params.storm_principal_name,
-                                        topic),
-                    user=self.__params.kafka_user)
+                                        topic))
 
         Logger.info("Done creating Kafka topics")
         self.set_kafka_configured()
