@@ -39,14 +39,13 @@ config = Script.get_config()
 tmp_dir = Script.get_tmp_dir()
 
 hostname = config['hostname']
-metron_group = config['configurations']['cluster-env']['metron_group']
-metron_home = status_params.metron_home
 parsers = status_params.parsers
 geoip_url = config['configurations']['metron-env']['geoip_url']
 geoip_hdfs_dir = "/apps/metron/geo/default/"
 metron_indexing_topology = status_params.metron_indexing_topology
 metron_user = config['configurations']['metron-env']['metron_user']
 metron_group = config['configurations']['metron-env']['metron_group']
+metron_home = status_params.metron_home
 metron_config_path = metron_home + '/config'
 metron_zookeeper_config_dir = status_params.metron_zookeeper_config_dir
 metron_zookeeper_config_path = status_params.metron_zookeeper_config_path
@@ -170,5 +169,30 @@ error_index_path = tmp_dir + "/error_index.template"
 # Zeppelin Notebooks
 metron_config_zeppelin_path = format("{metron_config_path}/zeppelin")
 
-#kafka_security
-kafka_security_protocol = config['configurations']['metron-env']['kafka_security_protocol']
+# kafka_security
+kafka_security_protocol = config['configurations']['kafka-broker'].get('security.inter.broker.protocol', 'PLAINTEXT')
+
+# Security
+security_enabled = status_params.security_enabled
+
+if security_enabled:
+    hostname_lowercase = config['hostname'].lower()
+    metron_principal_name = config['configurations']['metron-env']['metron_principal_name']
+    metron_jaas_principal = metron_principal_name.replace('_HOST', hostname_lowercase)
+    ambari_principal_name = default('/configurations/cluster-env/ambari_principal_name', None)
+    metron_keytab_path = config['configurations']['metron-env']['metron_service_keytab']
+    kinit_path_local = status_params.kinit_path_local
+
+    hbase_principal_name = config['configurations']['hbase-env']['hbase_principal_name']
+    hbase_keytab_path = config['configurations']['hbase-env']['hbase_user_keytab']
+
+    kafka_user = config['configurations']['kafka-env']['kafka_user']
+    kafka_principal_raw = config['configurations']['kafka-env']['kafka_principal_name']
+    kafka_principal_name = kafka_principal_raw.replace('_HOST', hostname_lowercase)
+    kafka_keytab_path = config['configurations']['kafka-env']['kafka_keytab']
+
+    storm_user = config['configurations']['storm-env']['storm_user']
+    storm_principal_name = status_params.storm_principal_name
+    storm_principal = storm_principal_name.split('@', 1)[0]
+    storm_keytab_path = status_params.storm_keytab_path
+
