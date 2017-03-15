@@ -18,6 +18,7 @@ name: "enrichment"
 config:
     topology.workers: 1
     topology.acker.executors: 0
+    topology.auto-credentials: ["org.apache.storm.hdfs.common.security.AutoHDFS","org.apache.storm.hbase.security.AutoHBase"]
 
 components:
 # Enrichment
@@ -93,6 +94,8 @@ components:
     #enrichment error
     -   id: "enrichmentErrorKafkaWriter"
         className: "org.apache.metron.writer.kafka.KafkaWriter"
+        constructorArgs:
+          -   "${kafka.broker}"
         configMethods:
             -   name: "withTopic"
                 args:
@@ -100,6 +103,9 @@ components:
             -   name: "withZkQuorum"
                 args:
                     - "${kafka.zk}"
+            -   name: "withSecurityProtocol"
+                args:
+                    - "${kafka.security.protocol}"
 
 # Threat Intel
     -   id: "stellarThreatIntelAdapter"
@@ -156,6 +162,8 @@ components:
     #threatintel error
     -   id: "threatIntelErrorKafkaWriter"
         className: "org.apache.metron.writer.kafka.KafkaWriter"
+        constructorArgs:
+          -   "${kafka.broker}"
         configMethods:
             -   name: "withTopic"
                 args:
@@ -163,10 +171,15 @@ components:
             -   name: "withZkQuorum"
                 args:
                     - "${kafka.zk}"
+            -   name: "withSecurityProtocol"
+                args:
+                    - "${kafka.security.protocol}"
 
 #indexing
     -   id: "kafkaWriter"
         className: "org.apache.metron.writer.kafka.KafkaWriter"
+        constructorArgs:
+          -   "${kafka.broker}"
         configMethods:
             -   name: "withTopic"
                 args:
@@ -174,6 +187,9 @@ components:
             -   name: "withZkQuorum"
                 args:
                     - "${kafka.zk}"
+            -   name: "withSecurityProtocol"
+                args:
+                    - "${kafka.security.protocol}"
 
 #kafka/zookeeper
     -   id: "zkHosts"
@@ -196,12 +212,15 @@ components:
                 value: true
             -   name: "startOffsetTime"
                 value: -1
+            -   name: "securityProtocol"
+                value: "${kafka.security.protocol}"
 
 spouts:
     -   id: "kafkaSpout"
         className: "org.apache.storm.kafka.KafkaSpout"
         constructorArgs:
             - ref: "kafkaConfig"
+
 bolts:
 # Enrichment Bolts
     -   id: "enrichmentSplitBolt"

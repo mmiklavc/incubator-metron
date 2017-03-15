@@ -37,6 +37,7 @@ class Enrichment(Script):
     def configure(self, env, upgrade_type=None, config_dir=None):
         from params import params
         env.set_params(params)
+        commands = EnrichmentCommands(params)
 
         File(format("{metron_config_path}/enrichment.properties"),
              content=Template("enrichment.properties.j2"),
@@ -44,18 +45,20 @@ class Enrichment(Script):
              group=params.metron_group
              )
 
-    def start(self, env, upgrade_type=None):
-        from params import params
-        env.set_params(params)
-        commands = EnrichmentCommands(params)
-        metron_service.load_global_config(params)
-
         if not commands.is_kafka_configured():
             commands.init_kafka_topics()
         if not commands.is_hbase_configured():
             commands.create_hbase_tables()
         if not commands.is_geo_configured():
             commands.init_geo()
+
+        metron_service.load_global_config(params)
+
+    def start(self, env, upgrade_type=None):
+        from params import params
+        env.set_params(params)
+
+        self.configure()
 
         commands.start_enrichment_topology()
 

@@ -307,6 +307,7 @@ public class ParserTopologyCLI {
 
       List<String> ac = new ArrayList<>();
       ac.add("org.apache.storm.hdfs.common.security.AutoHDFS");
+      ac.add("org.apache.storm.hbase.security.AutoHBase");
       stormConf.put(Config.TOPOLOGY_AUTO_CREDENTIALS,ac);
 
       if (ParserOptions.TEST.has(cmd)) {
