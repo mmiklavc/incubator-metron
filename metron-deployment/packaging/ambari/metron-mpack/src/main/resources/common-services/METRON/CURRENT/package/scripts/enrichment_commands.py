@@ -133,15 +133,15 @@ class EnrichmentCommands:
     def init_geo(self):
         if self.__params.security_enabled:
             kinit(self.__params.kinit_path_local,
-                  self.__params.metron_keytab_path,
-                  self.__params.metron_jaas_principal,
-                  self.__params.metron_user)
+                  self.__params.storm_keytab_path,
+                  self.__params.storm_principal_name,
+                  self.__params.storm_user)
 
         Logger.info("Creating HDFS location for GeoIP database")
         self.__params.HdfsResource(self.__params.geoip_hdfs_dir,
                                    type="directory",
                                    action="create_on_execute",
-                                   owner=self.__params.metron_user,
+                                   owner=self.__params.storm_user,
                                    mode=0775
                                    )
 
