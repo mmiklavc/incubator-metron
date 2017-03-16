@@ -86,6 +86,7 @@ components:
             -   name: "from"
                 args:
                     - "${kafka.start}"
+        properties:
             -   name: "securityProtocol"
                 value: "${kafka.security.protocol}"
 
