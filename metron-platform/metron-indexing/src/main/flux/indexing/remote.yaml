@@ -52,6 +52,8 @@ components:
                     - ref: "hdfsRotationPolicy"
     -   id: "kafkaWriter"
         className: "org.apache.metron.writer.kafka.KafkaWriter"
+        constructorArgs:
+          -   "${kafka.broker}"
         configMethods:
             -   name: "withTopic"
                 args:

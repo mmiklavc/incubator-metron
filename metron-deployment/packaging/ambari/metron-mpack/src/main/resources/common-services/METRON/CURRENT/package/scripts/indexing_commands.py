@@ -146,12 +146,12 @@ class IndexingCommands:
                   self.__params.storm_keytab_path,
                   self.__params.storm_principal_name,
                   self.__params.storm_user)
-
+        #TODO - Figure out how to switch the onwer on kerberization
         self.__params.HdfsResource(self.__params.metron_apps_indexed_hdfs_dir,
                                    type="directory",
                                    action="create_on_execute",
                                    owner=self.__params.storm_user,
-                                   mode=0775,
+                                   mode=0777,
                                    )
         Logger.info('Done creating HDFS indexing directory')
 
