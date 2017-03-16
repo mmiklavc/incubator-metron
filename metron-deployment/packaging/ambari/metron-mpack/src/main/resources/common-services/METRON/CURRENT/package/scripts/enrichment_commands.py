@@ -156,7 +156,7 @@ class EnrichmentCommands:
                                           self.__params.zookeeper_quorum
                                           )
         Logger.info("Executing command " + command)
-        Execute(command, user=self.__params.metron_user, tries=1, logoutput=True)
+        Execute(command, user=self.__params.storm_user, tries=1, logoutput=True)
         Logger.info("Done intializing GeoIP data")
         self.set_geo_configured()
 

@@ -179,6 +179,8 @@ kafka_security_protocol = config['configurations']['kafka-broker'].get('security
 kafka_user = config['configurations']['kafka-env']['kafka_user']
 storm_user = config['configurations']['storm-env']['storm_user']
 
+storm_auto_credentials = config['configurations']['storm-env'].get('nimbus.autocredential.plugins.classes','[]')
+
 # Security
 security_enabled = status_params.security_enabled
 

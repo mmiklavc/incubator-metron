@@ -18,7 +18,7 @@ name: "enrichment"
 config:
     topology.workers: 1
     topology.acker.executors: 0
-    topology.auto-credentials: ["org.apache.storm.hdfs.common.security.AutoHDFS","org.apache.storm.hbase.security.AutoHBase"]
+    topology.auto-credentials: ${storm.auto.credentials}
 
 components:
 # Enrichment

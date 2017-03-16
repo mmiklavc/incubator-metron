@@ -44,6 +44,8 @@ class Enrichment(Script):
              group=params.metron_group
              )
 
+        metron_service.load_global_config(params)
+
         if not commands.is_kafka_configured():
             commands.init_kafka_topics()
         if params.security_enabled and not commands.is_kafka_acl_configured():
@@ -55,7 +57,7 @@ class Enrichment(Script):
         if not commands.is_geo_configured():
             commands.init_geo()
 
-        metron_service.load_global_config(params)
+
 
     def start(self, env, upgrade_type=None):
         from params import params
