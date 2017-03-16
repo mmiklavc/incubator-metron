@@ -194,9 +194,11 @@
 ##### Storm #####
 indexing.workers=1
 indexing.executors=0
+storm.auto.credentials = {{ storm_auto_credentials }}
 ##### Kafka #####
 kafka.zk={{ zookeeper_quorum }}
 kafka.broker={{ kafka_brokers }}
+kafka.security.protocol={{ kafka_security_protocol }}
 kafka.start=WHERE_I_LEFT_OFF
 ##### Indexing #####
 index.input.topic=indexing
