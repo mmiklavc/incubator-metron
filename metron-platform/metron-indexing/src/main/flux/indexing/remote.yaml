@@ -18,6 +18,7 @@ name: "indexing"
 config:
     topology.workers: ${indexing.workers}
     topology.acker.executors: ${indexing.executors}
+    topology.auto-credentials: ${storm.auto.credentials}
 
 components:
 
@@ -58,6 +59,9 @@ components:
             -   name: "withZkQuorum"
                 args:
                     - "${kafka.zk}"
+            -   name: "withSecurityProtocol"
+                args:
+                    - "${kafka.security.protocol}"
 
     -   id: "indexWriter"
         className: "${writer.class.name}"
@@ -82,6 +86,8 @@ components:
             -   name: "from"
                 args:
                     - "${kafka.start}"
+            -   name: "securityProtocol"
+                value: "${kafka.security.protocol}"
 
 spouts:
     -   id: "kafkaSpout"
