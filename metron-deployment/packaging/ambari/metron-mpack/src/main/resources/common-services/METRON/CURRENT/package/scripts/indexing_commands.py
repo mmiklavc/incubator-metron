@@ -134,7 +134,7 @@ class IndexingCommands:
         Logger.info("Creating ACL for topic'{0}'".format(self.__indexing))
         Execute(acl_template.format(self.__params.kafka_bin_dir,
                                     self.__params.zookeeper_quorum,
-                                    self.__params.storm_principal_name,
+                                    self.__params.storm_principal,
                                     self.__indexing),
                 user=self.__params.kafka_user)
         Logger.info("Done creating Kafka ACLs")
