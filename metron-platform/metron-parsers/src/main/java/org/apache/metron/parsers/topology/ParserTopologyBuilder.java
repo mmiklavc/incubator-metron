@@ -36,7 +36,7 @@ import org.apache.metron.parsers.interfaces.MessageParser;
 import org.apache.metron.writer.AbstractWriter;
 import org.apache.metron.writer.kafka.KafkaWriter;
 import org.json.simple.JSONObject;
-import org.apache.storm.kafka.KafkaSpout;
+import org.apache.storm.kafka.spout.KafkaSpout;
 import org.apache.storm.kafka.ZkHosts;
 
 import java.util.EnumMap;

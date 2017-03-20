@@ -18,7 +18,9 @@
 
 package org.apache.metron.common.spout.kafka;
 
+import org.apache.storm.kafka.spout.KafkaSpoutConfig;
+
 public interface SpoutConfigFunction {
-  void configure(org.apache.storm.kafka.spout.KafkaSpoutConfig config, Object val);
+  void configure(KafkaSpoutConfig.Builder builder, Object val);
 
 }

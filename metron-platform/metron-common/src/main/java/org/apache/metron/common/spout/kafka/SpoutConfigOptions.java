@@ -26,7 +26,8 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public enum SpoutConfigOptions implements SpoutConfigFunction {
-  retryDelayMaxMs( (config, val) -> config.retryDelayMaxMs = convertVal(val, Long.class) ),
+  // TODO find the mapping for these options
+  retryDelayMaxMs( (builder, val) -> builder.config.retryDelayMaxMs = convertVal(val, Long.class) ),
   retryDelayMultiplier ( (config, val) -> config.retryDelayMultiplier = convertVal(val, Double.class)),
   retryInitialDelayMs( (config, val) -> config.retryInitialDelayMs = convertVal(val, Long.class)),
   stateUpdateIntervalMs( (config, val) -> config.stateUpdateIntervalMs = convertVal(val, Long.class)),
@@ -44,10 +45,11 @@ public enum SpoutConfigOptions implements SpoutConfigFunction {
   }
 
   @Override
-  public void configure(SpoutConfig config, Object val) {
-    spoutConfigFunc.configure(config, val);
+  public void configure(KafkaSpoutConfig.Builder builder, Object val) {
+    spoutConfigFunc.configure(builder, val);
   }
 
+  // TODO use the builder in KafkaSpoutConfig
   public static SpoutConfig configure(SpoutConfig config, EnumMap<SpoutConfigOptions, Object> configs) {
     if(configs != null) {
       for(Map.Entry<SpoutConfigOptions, Object> kv : configs.entrySet()) {
