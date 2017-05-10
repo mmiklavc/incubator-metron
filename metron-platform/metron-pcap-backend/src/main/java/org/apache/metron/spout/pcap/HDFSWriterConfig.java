@@ -34,6 +34,7 @@ public class HDFSWriterConfig implements Serializable {
   static final long serialVersionUID = 0xDEADBEEFL;
   private long numPackets;
   private long maxTimeNS;
+  private int syncEvery = 1;
   private String outputPath;
   private String zookeeperQuorum;
   private KeyValueDeserializer deserializer;
@@ -66,6 +67,16 @@ public class HDFSWriterConfig implements Serializable {
    */
   public HDFSWriterConfig withNumPackets(long n) {
     numPackets = n;
+    return this;
+  }
+
+  /**
+   * The number of packets to write before a file is rolled.
+   * @param n
+   * @return
+   */
+  public HDFSWriterConfig withSyncEvery(int n) {
+    syncEvery = n;
     return this;
   }
 
@@ -110,6 +121,10 @@ public class HDFSWriterConfig implements Serializable {
       return Integer.parseInt(portStr);
     }
     return  null;
+  }
+
+  public int getSyncEvery() {
+    return syncEvery;
   }
 
   public KeyValueDeserializer getDeserializer() {
