@@ -89,6 +89,17 @@ public class KafkaCopy {
         return o;
       }
     })
+    ,NUM("n", new OptionHandler() {
+
+      @Nullable
+      @Override
+      public Option apply(@Nullable String s) {
+        Option o = new Option(s, "num", true, "number of records to read");
+        o.setArgName("NUM");
+        o.setRequired(true);
+        return o;
+      }
+    })
     ,CONSUMER_CONFIGS("cc", new OptionHandler() {
 
       @Nullable
@@ -160,7 +171,7 @@ public class KafkaCopy {
   }
 
   public static class Progress {
-    private int count = 0;
+    int count = 0;
     private String anim= "|/-\\";
     private long startTime = System.currentTimeMillis();
     double eps = 0;
@@ -206,14 +217,16 @@ public class KafkaCopy {
       });
       consumerConfig.putAll(additionalConfigs);
     }
-
+    int n = Integer.parseInt(CopyOptions.NUM.get(cli));
     try(Producer<byte[], byte[]> producer = new KafkaProducer<>(producerConfig)) {
       try (KafkaConsumer<byte[], byte[]> consumer = new KafkaConsumer<>(consumerConfig)) {
         Progress progress = new Progress();
         consumer.subscribe(Arrays.asList(CopyOptions.INPUT.get(cli)));
-        for (ConsumerRecord<byte[], byte[]> record : consumer.poll(5000)) {
-          producer.send(new ProducerRecord<>(CopyOptions.OUTPUT.get(cli), record.key(), record.value()));
-          progress.update();
+        for(;progress.count < n;) {
+          for (ConsumerRecord<byte[], byte[]> record : consumer.poll(5000)) {
+            producer.send(new ProducerRecord<>(CopyOptions.OUTPUT.get(cli), record.key(), record.value()));
+            progress.update();
+          }
         }
       }
     }
