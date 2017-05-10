@@ -35,6 +35,7 @@ public class HDFSWriterConfig implements Serializable {
   private long numPackets;
   private long maxTimeNS;
   private int syncEvery = 1;
+  private int replicationFactor = -1;
   private String outputPath;
   private String zookeeperQuorum;
   private KeyValueDeserializer deserializer;
@@ -77,6 +78,16 @@ public class HDFSWriterConfig implements Serializable {
    */
   public HDFSWriterConfig withSyncEvery(int n) {
     syncEvery = n;
+    return this;
+  }
+
+  /**
+   * The HDFS replication factor to use. A value of -1 will not set replication factor.
+   * @param n
+   * @return
+   */
+  public HDFSWriterConfig withReplicationFactor(int n) {
+    replicationFactor = n;
     return this;
   }
 
@@ -127,6 +138,10 @@ public class HDFSWriterConfig implements Serializable {
     return syncEvery;
   }
 
+  public int getReplicationFactor() {
+    return replicationFactor;
+  }
+
   public KeyValueDeserializer getDeserializer() {
     return deserializer;
   }
@@ -151,4 +166,5 @@ public class HDFSWriterConfig implements Serializable {
             ", outputPath='" + outputPath + '\'' +
             '}';
   }
+
 }

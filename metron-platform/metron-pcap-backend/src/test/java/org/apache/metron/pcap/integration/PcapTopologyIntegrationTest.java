@@ -224,6 +224,8 @@ public class PcapTopologyIntegrationTest {
       setProperty("kafka.spout.parallelism", "1");
       setProperty("topology.auto-credentials", "[]");
       setProperty("kafka.security.protocol", "PLAINTEXT");
+      setProperty("hdfs.sync.every", "1");
+      setProperty("hdfs.replication.factor", "-1");
     }};
     updatePropertiesCallback.apply(topologyProperties);
 

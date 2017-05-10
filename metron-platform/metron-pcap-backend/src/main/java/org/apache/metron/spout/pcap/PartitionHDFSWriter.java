@@ -30,7 +30,10 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.log4j.Logger;
 import org.apache.metron.pcap.PcapHelper;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.EnumSet;
 
 /**
@@ -109,7 +112,12 @@ public class PartitionHDFSWriter implements AutoCloseable, Serializable {
     this.uuid = uuid;
     this.config = config;
     try {
-      this.fs = FileSystem.get(new Configuration());
+      Configuration fsConfig = new Configuration();
+      int replicationFactor = config.getReplicationFactor();
+      if (replicationFactor != -1) {
+        fsConfig.set("dfs.replication", (String.valueOf(replicationFactor)));
+      }
+      this.fs = FileSystem.get(fsConfig);
     } catch (IOException e) {
       throw new RuntimeException("Unable to get FileSystem", e);
     }

@@ -70,6 +70,12 @@ components:
       -   name: "withZookeeperQuorum"
           args:
             - "${kafka.zk}"
+      -   name: "withSyncEvery"
+          args:
+            - ${hdfs.sync.every}
+      -   name: "withReplicationFactor"
+          args:
+            - ${hdfs.replication.factor}
       -   name: "withDeserializer"
           args:
             - "${kafka.pcap.ts_scheme}"
