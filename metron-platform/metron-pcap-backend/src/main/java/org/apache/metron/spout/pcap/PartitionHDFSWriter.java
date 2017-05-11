@@ -226,7 +226,7 @@ public class PartitionHDFSWriter implements AutoCloseable, Serializable {
               , SequenceFile.Writer.compression(SequenceFile.CompressionType.NONE)
       );
       //reset state
-      LOG.info("Turning over and writing to " + path);
+      LOG.info(String.format("Turning over and writing to %s: [force=%s, initial=%s, overDuration=%s, tooManyPackets=%s]", path, force, initial, overDuration, tooManyPackets));
       batchStartTime = ts;
       numWritten = 0;
     }
