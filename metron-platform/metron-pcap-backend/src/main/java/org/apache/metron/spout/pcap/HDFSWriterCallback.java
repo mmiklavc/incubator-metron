@@ -22,6 +22,7 @@ import com.google.common.base.Joiner;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.Logger;
+import org.apache.metron.spout.pcap.deserializer.KeyValueDeserializer;
 import org.apache.storm.kafka.Callback;
 import org.apache.storm.kafka.EmitContext;
 
@@ -116,7 +117,8 @@ public class HDFSWriterCallback implements Callback {
     public List<Object> apply(List<Object> tuple, EmitContext context) {
         byte[] key = (byte[]) tuple.get(0);
         byte[] value = (byte[]) tuple.get(1);
-        if(!config.getDeserializer().deserializeKeyValue(key, value, KeyValue.key.get(), KeyValue.value.get())) {
+        KeyValueDeserializer.Result result = config.getDeserializer().deserializeKeyValue(key, value);
+        if(!result.result) {
             if(LOG.isDebugEnabled()) {
                 List<String> debugStatements = new ArrayList<>();
                 if(key != null) {
@@ -140,7 +142,7 @@ public class HDFSWriterCallback implements Callback {
         try {
             getWriter(new Partition( topic
                                    , context.get(EmitContext.Type.PARTITION))
-                     ).handle(KeyValue.key.get(), KeyValue.value.get());
+                     ).handle(result.key, result.value);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
             //drop?  not sure..
