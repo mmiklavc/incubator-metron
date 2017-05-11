@@ -35,6 +35,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.EnumSet;
+import java.util.Map;
 
 /**
  * This class is intended to handle the writing of an individual file.
@@ -116,6 +117,29 @@ public class PartitionHDFSWriter implements AutoCloseable, Serializable {
       int replicationFactor = config.getReplicationFactor();
       if (replicationFactor != -1) {
         fsConfig.set("dfs.replication", (String.valueOf(replicationFactor)));
+      }
+      if(config.getHDFSConfig() != null && !config.getHDFSConfig().isEmpty()) {
+        for(Map.Entry<String, Object> entry : config.getHDFSConfig().entrySet()) {
+          if(entry.getValue() instanceof Integer) {
+            fsConfig.setInt(entry.getKey(), (int)entry.getValue());
+          }
+          else if(entry.getValue() instanceof Boolean)
+          {
+            fsConfig.setBoolean(entry.getKey(), (Boolean) entry.getValue());
+          }
+          else if(entry.getValue() instanceof Long)
+          {
+            fsConfig.setLong(entry.getKey(), (Long) entry.getValue());
+          }
+          else if(entry.getValue() instanceof Float)
+          {
+            fsConfig.setFloat(entry.getKey(), (Float) entry.getValue());
+          }
+          else
+          {
+            fsConfig.set(entry.getKey(), String.valueOf(entry.getValue()));
+          }
+        }
       }
       this.fs = FileSystem.get(fsConfig);
     } catch (IOException e) {

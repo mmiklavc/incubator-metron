@@ -25,7 +25,9 @@ import org.apache.metron.spout.pcap.deserializer.KeyValueDeserializer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Configure the HDFS Writer for PCap
@@ -39,6 +41,7 @@ public class HDFSWriterConfig implements Serializable {
   private String outputPath;
   private String zookeeperQuorum;
   private KeyValueDeserializer deserializer;
+  private Map<String, Object> hdfsConfig = new HashMap<>();
 
   /**
    * Set the deserializer, the bit of logic that defines how the timestamp and packet are read.
@@ -78,6 +81,16 @@ public class HDFSWriterConfig implements Serializable {
    */
   public HDFSWriterConfig withSyncEvery(int n) {
     syncEvery = n;
+    return this;
+  }
+
+  /**
+   * The map config for HDFS
+   * @param config
+   * @return
+   */
+  public HDFSWriterConfig withHDFSConfig(Map<String, Object> config) {
+    hdfsConfig = config;
     return this;
   }
 
@@ -124,6 +137,11 @@ public class HDFSWriterConfig implements Serializable {
     }
     return out;
   }
+
+  public Map<String, Object> getHDFSConfig() {
+    return hdfsConfig;
+  }
+
 
   public Integer getZookeeperPort() {
     if(zookeeperQuorum != null) {
