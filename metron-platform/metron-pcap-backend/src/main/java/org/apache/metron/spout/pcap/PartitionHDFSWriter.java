@@ -155,10 +155,10 @@ public class PartitionHDFSWriter implements AutoCloseable, Serializable {
   public void handle(long ts, byte[] value) throws IOException {
     turnoverIfNecessary(ts);
     BytesWritable bw = new BytesWritable(value);
-//    writer.append(new LongWritable(ts), bw);
+    writer.append(new LongWritable(ts), bw);
     numWritten++;
     if(numWritten % config.getSyncEvery() == 0) {
-//      syncHandler.sync(outputStream);
+      syncHandler.sync(outputStream);
     }
   }
 
