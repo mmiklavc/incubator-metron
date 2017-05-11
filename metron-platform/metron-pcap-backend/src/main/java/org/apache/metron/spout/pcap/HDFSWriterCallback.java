@@ -115,7 +115,7 @@ public class HDFSWriterCallback implements Callback {
 
     @Override
     public List<Object> apply(List<Object> tuple, EmitContext context) {
-        byte[] key = (byte[]) tuple.get(0);
+        /*byte[] key = (byte[]) tuple.get(0);
         byte[] value = (byte[]) tuple.get(1);
         KeyValueDeserializer.Result result = config.getDeserializer().deserializeKeyValue(key, value);
         if(!result.result) {
@@ -146,7 +146,7 @@ public class HDFSWriterCallback implements Callback {
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
             //drop?  not sure..
-        }
+        }*/
         return tuple;
     }
 
