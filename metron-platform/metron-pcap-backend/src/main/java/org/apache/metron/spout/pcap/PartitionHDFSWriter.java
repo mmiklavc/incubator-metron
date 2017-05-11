@@ -106,14 +106,15 @@ public class PartitionHDFSWriter implements AutoCloseable, Serializable {
   private SyncHandler syncHandler;
   private long batchStartTime;
   private long numWritten;
+  private Configuration fsConfig = new Configuration();
 
   public PartitionHDFSWriter(String topic, int partition, String uuid, HDFSWriterConfig config) {
     this.topic = topic;
     this.partition = partition;
     this.uuid = uuid;
     this.config = config;
+
     try {
-      Configuration fsConfig = new Configuration();
       int replicationFactor = config.getReplicationFactor();
       if (replicationFactor != -1) {
         fsConfig.set("dfs.replication", (String.valueOf(replicationFactor)));
@@ -217,7 +218,7 @@ public class PartitionHDFSWriter implements AutoCloseable, Serializable {
         }
 
       }
-      writer = SequenceFile.createWriter(new Configuration()
+      writer = SequenceFile.createWriter(this.fsConfig
               , SequenceFile.Writer.keyClass(LongWritable.class)
               , SequenceFile.Writer.valueClass(BytesWritable.class)
               , SequenceFile.Writer.stream(outputStream)
