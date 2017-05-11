@@ -193,7 +193,7 @@ public class PartitionHDFSWriter implements AutoCloseable, Serializable {
   private void turnoverIfNecessary(long ts, boolean force) throws IOException {
     long duration = ts - batchStartTime;
     boolean initial = outputStream == null;
-    boolean overDuration = Long.compareUnsigned(duration, config.getMaxTimeNS()) >= 0;
+    boolean overDuration = config.getMaxTimeNS() <= 0 ? false : Long.compareUnsigned(duration, config.getMaxTimeNS()) >= 0;
     boolean tooManyPackets = numWritten >= config.getNumPackets();
     if(force || initial || overDuration || tooManyPackets ) {
       //turnover
@@ -226,7 +226,7 @@ public class PartitionHDFSWriter implements AutoCloseable, Serializable {
               , SequenceFile.Writer.compression(SequenceFile.CompressionType.NONE)
       );
       //reset state
-      LOG.info(String.format("Turning over and writing to %s: [force=%s, initial=%s, overDuration=%s, tooManyPackets=%s]", path, force, initial, overDuration, tooManyPackets));
+      LOG.info(String.format("Turning over and writing to %s: [duration=%s NS, force=%s, initial=%s, overDuration=%s, tooManyPackets=%s]", path, duration, force, initial, overDuration, tooManyPackets));
       batchStartTime = ts;
       numWritten = 0;
     }
