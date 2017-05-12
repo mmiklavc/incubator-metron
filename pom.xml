@@ -39,22 +39,6 @@
 
     <repositories>
         <repository>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
-            </snapshots>
-            <id>HDPPrivateReleases</id>
-            <name>HDP Private Releases</name>
-            <url>http://nexus-private.hortonworks.com/nexus/content/groups/public</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
             <id>clojars.org</id>
             <url>http://clojars.org/repo</url>
         </repository>
