@@ -65,6 +65,22 @@
                 <checksumPolicy>warn</checksumPolicy>
             </releases>
             <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+            <id>HDPPrivateReleases</id>
+            <name>HDP Private Releases</name>
+            <url>http://nexus-private.hortonworks.com/nexus/content/groups/public</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+            <snapshots>
                 <enabled>false</enabled>
                 <updatePolicy>never</updatePolicy>
                 <checksumPolicy>fail</checksumPolicy>
@@ -122,6 +138,7 @@
              but I justify it by noting that this should be able to be removed when we migrate to
              Storm 1.1.x, which properly supports Kafka 0.10.x.
           -->
+
         <!--global_storm_kafka_version>1.1.0</global_storm_kafka_version-->
         <global_storm_kafka_version>1.1.0.2.6.1.0-SNAPSHOT</global_storm_kafka_version>
         <global_flux_version>${base_flux_version}</global_flux_version>
