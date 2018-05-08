@@ -36,6 +36,11 @@
         <spring-kafka.version>1.1.1.RELEASE</spring-kafka.version>
         <spring.version>4.2.2.RELEASE</spring.version>
         <eclipse.link.version>2.6.4</eclipse.link.version>
+
+	<hadoop.version>${global_hadoop_version}</hadoop.version>
+	<slf4j.version>${global_slf4j_version}</slf4j.version>
+	<zookeeper.version>3.4.5.2.0.6.0-76</zookeeper.version>
+	<logger.version>1.2.15</logger.version>
     </properties>
     <dependencies>
       <dependency>
@@ -376,6 +381,39 @@
                 </exclusion>
             </exclusions>
         </dependency>
+	<dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${global_hbase_guava_version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${global_hadoop_version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.slf4j</groupId>
+              <artifactId>slf4j-log4j12</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+            <version>${global_hadoop_version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${global_hadoop_version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>
@@ -406,7 +444,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
+		<version>${global_shade_version}</version>
+                <!--<version>2.3</version>-->
                 <dependencies>
                     <dependency>
                         <groupId>org.springframework.boot</groupId>
@@ -417,16 +456,11 @@
                 <configuration>
                     <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
                     <createDependencyReducedPom>true</createDependencyReducedPom>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/*.SF</exclude>
-                                <exclude>META-INF/*.DSA</exclude>
-                                <exclude>META-INF/*.RSA</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
+                    <artifactSet>
+                        <excludes>
+                            <exclude>*slf4j*</exclude>
+                        </excludes>
+                    </artifactSet>
                 </configuration>
                 <executions>
                     <execution>
@@ -435,8 +469,36 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <!--<createDependencyReducedPom>false</createDependencyReducedPom> -->
+			    <filters>
+				<filter>
+				  <artifact>*:*</artifact>
+				  <excludes>
+				    <exclude>META-INF/*.SF</exclude>
+				    <exclude>META-INF/*.DSA</exclude>
+				    <exclude>META-INF/*.RSA</exclude>
+				  </excludes>
+				</filter>
+			    </filters>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.common</pattern>
+                                    <shadedPattern>org.apache.metron.guava</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons.configuration</pattern>
+                                    <shadedPattern>org.apache.metron.commons.configuration</shadedPattern>
+                                </relocation>
+                            </relocations>
                             <transformers>
+				<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                     <resources>
+                                        <resource>.yaml</resource>
+                                        <resource>LICENSE.txt</resource>
+                                        <resource>ASL2.0</resource>
+                                        <resource>NOTICE.txt</resource>
+                                      </resources>
+                                </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/spring.handlers</resource>
                                 </transformer>
