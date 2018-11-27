@@ -278,4 +278,5 @@ public class ElasticsearchSearchIntegrationTest extends SearchIntegrationTest {
       return "snort_index_2017.01.01.02";
     }
   }
+  
 }

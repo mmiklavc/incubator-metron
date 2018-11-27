@@ -94,12 +94,12 @@ public class FrequencySketchFunctions {
 
   @Stellar(namespace = "FREQUENCY_SKETCH"
       , name = "ESTIMATE"
-      , description = "Returns the estimated occurrence of this item(s) in the frequency estimator sketch."
+      , description = "Calculates the estimated occurrence of this item(s) in the frequency estimator sketch."
       , params = {
       "frequencySketch - the frequency estimator sketch to use for calculating the estimate"
-      , "value+ - value to get estimate for. Takes a single item or a list"
+      , "fields - Optional list of GeoIP fields to grab. Options are: item, estimate, upperbound, lowerbound"
   }
-      , returns = "Frequency estimate(s) for the provided item(s)."
+      , returns = "If a single field is requested a string of the field. If multiple fields a map of string of the fields, and null otherwise."
   )
   public static class Estimate extends BaseStellarFunction {
 
@@ -112,12 +112,12 @@ public class FrequencySketchFunctions {
       if (null == fi) {
         throw new IllegalArgumentException("Must provide FrequencySketch as first arg.");
       }
-      List<ItemEstimate> frequencies = new ArrayList<>();
+      List<Object> frequencies = new ArrayList<>();
       if (args.size() == 2) {
         Object item = args.get(1);
         frequencies.add(new ItemEstimate(item, fi.getEstimate(item)));
       } else {
-        frequencies.addAll(fi.getEstimates());
+        return fi.getEstimates();
       }
       return frequencies;
     }

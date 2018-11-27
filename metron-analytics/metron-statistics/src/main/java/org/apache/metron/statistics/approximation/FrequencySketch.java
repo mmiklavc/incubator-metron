@@ -105,16 +105,25 @@ public class FrequencySketch implements KryoSerializable {
     return sketch.getEstimate(item);
   }
 
-  public List<ItemEstimate> getEstimates() {
+  /**
+   * Get simple list of top-k results.
+   *
+   * @return List of top-k results.
+   */
+  public List<Object> getEstimates() {
+    System.out.println("active items: " + sketch.getNumActiveItems());
+    System.out.println("current capacity: " + sketch.getCurrentMapCapacity());
+    System.out.println("max capacity: " + sketch.getMaximumMapCapacity());
     Row<Object>[] frequentItems = sketch.getFrequentItems(ErrorType.NO_FALSE_NEGATIVES);
-    List<ItemEstimate> itemEstimates = new ArrayList<>();
+    List<Object> topk = new ArrayList<>();
     for (Row<Object> row : frequentItems) {
-      ItemEstimate itemEstimate = new ItemEstimate().setItem(row.getItem())
-          .setEstimate(row.getEstimate()).setUpperBound(row.getUpperBound())
-          .setLowerBound(row.getLowerBound());
-      itemEstimates.add(itemEstimate);
+      topk.add(row.getItem());
+//      ItemEstimate itemEstimate = new ItemEstimate().setItem(row.getItem())
+//          .setEstimate(row.getEstimate()).setUpperBound(row.getUpperBound())
+//          .setLowerBound(row.getLowerBound());
+//      itemEstimates.add(itemEstimate);
     }
-    return itemEstimates;
+    return topk;
   }
 
   public static FrequencySketch merge(List<FrequencySketch> sketches, int maxMapSize) {
