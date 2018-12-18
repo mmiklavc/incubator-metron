@@ -78,7 +78,6 @@ object ParserApplication extends BaseIntegrationTest {
     val kafkaComponent: KafkaComponent = BaseIntegrationTest.getKafkaComponent(topologyProperties, new util.ArrayList[KafkaComponent.Topic]() {})
     topologyProperties.setProperty("kafka.broker", kafkaComponent.getBrokerList)
 
-    //
     val runner: ComponentRunner = new ComponentRunner.Builder()
       .withComponent("zk", zkServerComponent)
       .withComponent("kafka", kafkaComponent)
@@ -87,6 +86,8 @@ object ParserApplication extends BaseIntegrationTest {
       //        .withCustomShutdownOrder(Array[String]("config", "kafka", "zk")).withNumRetries(10).build
       .withCustomShutdownOrder(Array[String]("kafka", "zk")).withNumRetries(10).build
     runner.start()
+
+    // Set up ZK configs
     val connectionStr = zkServerComponent.getConnectionString
     val brokerList = kafkaComponent.getBrokerList // TODO make sure this is properly formatted
     println(connectionStr)
@@ -191,8 +192,7 @@ object ParserApplication extends BaseIntegrationTest {
       }
     }
 
-    // Start the computation
-    ssc.start()
+    ssc.stop()
     ssc.awaitTermination()
   }
 }
