@@ -1,0 +1,1 @@
+SYSLOGROUTER \<%{POSINT:priority}\>%{SYSLOGTIMESTAMP:timestamp} %{DATA:host} %{WORD:type}(\[%{NUMBER:process_num}\])?: %{GREEDYDATA:message}

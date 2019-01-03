@@ -1,0 +1,3 @@
+<86>Dec  5 15:04:32 srvautopvlsk11 sshd[9586]: pam_unix(sshd:session): session opened for user ukmetmon by (uid=0)
+<86>Dec  5 15:06:34 db3par2pvlsk51 sshd[31363]: Accepted password for ukmetmon from 22.98.40.141 port 56172 ssh2
+<86>Dec  5 15:06:34 db3par2pvlsk51 sshd[31363]: Accepted password for ukmetmon from 10.10.167.145 port 56172 ssh2

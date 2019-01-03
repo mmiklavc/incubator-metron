@@ -17,6 +17,24 @@
  */
 package org.apache.metron.parsers.bolt;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.function.Supplier;
 import org.apache.metron.common.Constants;
 import org.apache.metron.common.configuration.IndexingConfigurations;
 import org.apache.metron.common.configuration.ParserConfigurations;
@@ -40,25 +58,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.function.Supplier;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.argThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class ParserBoltTest extends BaseBoltTest {
 
@@ -315,6 +314,44 @@ public class ParserBoltTest extends BaseBoltTest {
 
       verify(writerHandlerHandleAck, times(1)).write("yaf", t1, message, parserConfigurations, messageGetStrategy);
       verify(outputCollector, times(0)).ack(t1);
+    }
+  }
+
+  @Test
+  public void shouldExecuteOnDroppedMessage() throws Exception {
+    when(messageGetStrategy.get(t1)).thenReturn("originalMessage".getBytes(StandardCharsets.UTF_8));
+    when(t1.getStringByField(FieldsConfiguration.TOPIC.getFieldName())).thenReturn("yafTopic");
+    MockParserRunner mockParserRunner = new MockParserRunner(new HashSet<String>() {{ add("yaf"); }});
+    ParserConfigurations parserConfigurations = new ParserConfigurations();
+    parserConfigurations.updateSensorParserConfig("yaf", new SensorParserConfig());
+
+    ParserBolt parserBolt = new ParserBolt("zookeeperUrl", mockParserRunner, new HashMap<String, WriterHandler>() {{
+      put("yaf", writerHandler);
+    }}) {
+
+      @Override
+      public ParserConfigurations getConfigurations() {
+        return parserConfigurations;
+      }
+    };
+
+    parserBolt.setMessageGetStrategy(messageGetStrategy);
+    parserBolt.setOutputCollector(outputCollector);
+    parserBolt.setTopicToSensorMap(new HashMap<String, String>() {{
+      put("yafTopic", "yaf");
+    }});
+    JSONObject message = new JSONObject();
+    message.put("field", "value");
+    mockParserRunner.setMessage(message);
+    RawMessage expectedRawMessage = new RawMessage("originalMessage".getBytes(StandardCharsets.UTF_8), new HashMap<>());
+
+    {
+      // Verify the correct message is written and ack is handled
+      parserBolt.execute(t1);
+
+      Assert.assertEquals(expectedRawMessage, mockParserRunner.getRawMessage());
+      verify(writerHandler, times(1)).write("yaf", t1, message, parserConfigurations, messageGetStrategy);
+      verify(outputCollector, times(1)).ack(t1);
     }
   }
 

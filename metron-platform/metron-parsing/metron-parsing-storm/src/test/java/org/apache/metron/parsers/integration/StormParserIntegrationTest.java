@@ -17,6 +17,7 @@ package org.apache.metron.parsers.integration;/*
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.metron.parsers.integration.validation.ParserDriver;
 import org.apache.metron.parsers.integration.validation.SampleDataValidation;
@@ -32,7 +33,8 @@ public class StormParserIntegrationTest extends ParserIntegrationTest {
 
   @Parameters(name = "{index}: sensorType={0}")
   public static Iterable<String> data() {
-    return sensorTypes;
+//    return sensorTypes;
+    return Arrays.asList("mike");
   }
 
   @Parameter

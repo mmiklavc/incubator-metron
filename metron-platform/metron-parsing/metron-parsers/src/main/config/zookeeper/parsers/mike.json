@@ -1,0 +1,33 @@
+{
+  "parserClassName": "org.apache.metron.parsers.GrokParser",
+  "sensorTopic": "mike",
+  "parserConfig": {
+    "grokPath":"/patterns/mike",
+    "patternLabel": "SYSLOGROUTER",
+    "kafka.topicField": "logical_source_type"
+  },
+  "fieldTransformations": [
+    {
+      "input": [
+        "message"
+      ],
+      "output": [
+        "logical_source_type"
+      ],
+      "transformation": "REGEX_SELECT",
+      "config": {
+        "unixauthloginaccept": "^Accepted "
+      }
+    },
+    {
+      "input": [],
+      "output": [
+        "timestamp"
+      ],
+      "transformation": "STELLAR",
+      "config": {
+        "timestamp": "TO_EPOCH_TIMESTAMP(FORMAT('%d %s', YEAR(), timestamp), 'yyyy MMM dd HH:mm:ss')"
+      }
+    }
+  ]
+}
