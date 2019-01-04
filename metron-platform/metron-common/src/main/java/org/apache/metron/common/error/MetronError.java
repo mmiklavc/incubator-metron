@@ -232,4 +232,16 @@ public class MetronError {
     result = 31 * result + (rawMessages != null ? rawMessages.hashCode() : 0);
     return result;
   }
+
+  @Override
+  public String toString() {
+    return "MetronError{" +
+        "message='" + message + '\'' +
+        ", throwable=" + throwable +
+        ", sensorTypes=" + sensorTypes +
+        ", errorType=" + errorType +
+        ", errorFields=" + errorFields +
+        ", rawMessages=" + rawMessages +
+        '}';
+  }
 }

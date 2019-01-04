@@ -18,16 +18,19 @@ package org.apache.metron.parsers
  * limitations under the License.
  */
 
+import java.nio.charset.StandardCharsets
 import java.util
-import java.util.Properties
 import java.util.function.Supplier
+import java.util.{Collections, Properties}
 
 import org.apache.curator.RetryPolicy
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
+import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
 import org.apache.metron.common.configuration.{ConfigurationsUtils, ParserConfigurations, SensorParserConfig}
+import org.apache.metron.common.message.metadata.RawMessage
 import org.apache.metron.common.utils.JSONUtils
 import org.apache.metron.integration.components.{KafkaComponent, ZKServerComponent}
 import org.apache.metron.integration.{BaseIntegrationTest, ComponentRunner}
@@ -37,13 +40,14 @@ import org.apache.spark.SparkConf
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.kafka010._
 
-import scala.collection.{JavaConversions, mutable}
 import scala.collection.JavaConversions._
+import scala.collection.{JavaConversions, mutable}
 
 
 object ParserApplication extends BaseIntegrationTest {
   var sensorType = "csv"
   var sensorTopic = "input"
+  var outputTopic = "output"
   var zkComponentName = "zk"
   var kafkaComponentName = "kafka"
 
@@ -52,7 +56,7 @@ object ParserApplication extends BaseIntegrationTest {
       | {
       |   "parserClassName": "org.apache.metron.parsers.csv.CSVParser",
       |   "sensorTopic": "$sensorTopic",
-      |   "outputTopic": "output",
+      |   "outputTopic": "$outputTopic",
       |   "errorTopic": "error",
       |   "parserConfig": {
       |     "columns" : {
@@ -94,9 +98,9 @@ object ParserApplication extends BaseIntegrationTest {
     runner.start()
 
     // Load messages
-    kafkaComponent.writeMessages(sensorTopic, "messageOne")
-    kafkaComponent.writeMessages(sensorTopic, "messageTwo")
-    kafkaComponent.writeMessages(sensorTopic, "messageThree")
+    kafkaComponent.writeMessages(sensorTopic, "1_c1, 1_c2, 1_c3")
+    kafkaComponent.writeMessages(sensorTopic, "2_c1, 2_c2, 2_c3")
+    kafkaComponent.writeMessages(sensorTopic, "brokenMessage")
 
     // Ensure we can read messages
 //    println("messages in Kafka:")
@@ -129,7 +133,9 @@ object ParserApplication extends BaseIntegrationTest {
       ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokers,
       ConsumerConfig.GROUP_ID_CONFIG -> groupId,
       ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
+      ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer],
       ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
+      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer],
       ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest")
     val messages = KafkaUtils.createDirectStream[String, String](
       ssc,
@@ -202,19 +208,39 @@ object ParserApplication extends BaseIntegrationTest {
         }
         parserRunner.init(parserSupplier, stellarContext)
 
+        val producer = new KafkaProducer[String, String](kafkaParams)
+
+
         // TODO actually do work
         // TODO stop reading from ZK every time and use the callback stuff
         println("Reading from ZK")
         println(ConfigurationsUtils.readSensorParserConfigFromZookeeper(sensorType, client))
         partition.foreach {
-          record => println("Seen record: " + record)
+          record =>
+            // TODO don't just ignore metadata
+            var message = new RawMessage(record.value().getBytes(StandardCharsets.UTF_8), Collections.emptyMap())
+            var result = parserRunner.execute(sensorType, message, configs)
+            println("Messages: " + result.getMessages)
+            println("Errors: : " + result.getErrors)
+            result.getMessages.foreach {
+              resultMessage =>
+                 val outputMessage = new ProducerRecord[String, String](outputTopic, null, resultMessage.toJSONString)
+                 producer.send(outputMessage)
+            }
         }
         client.close()
       }
     }
 
     ssc.start()
-    ssc.awaitTermination()
+    ssc.awaitTerminationOrTimeout(6000)
+    ssc.stop()
+
+    println("messages in Kafka:")
+    kafkaComponent.readMessages(outputTopic).toList.foreach { raw =>
+      val str = new String(raw)
+      println(str)
+    }
   }
 }
 
