@@ -58,6 +58,23 @@ object ParserApplication extends BaseIntegrationTest with Reloadable {
   var parserConfigurations: ParserConfigurations = new ParserConfigurations()
 
   var parserConfigJSON: String =
+  s"""
+     | {
+     |   "parserClassName": "org.apache.metron.parsers.csv.CSVParser",
+     |   "sensorTopic": "$sensorTopic",
+     |   "outputTopic": "$outputTopic",
+     |   "errorTopic": "error",
+     |   "parserConfig": {
+     |     "columns" : {
+     |       "col1": 0,
+     |       "col2": 1,
+     |       "col3": 2
+     |     }
+     |   }
+     | }
+    """.stripMargin
+
+  var parserConfigJSONUpdate: String =
     s"""
        | {
        |   "parserClassName": "org.apache.metron.parsers.csv.CSVParser",
@@ -68,7 +85,8 @@ object ParserApplication extends BaseIntegrationTest with Reloadable {
        |     "columns" : {
        |       "col1": 0,
        |       "col2": 1,
-       |       "col3": 2
+       |       "col3": 2,
+       |       "col4": 3
        |     }
        |   }
        | }
@@ -225,7 +243,11 @@ object ParserApplication extends BaseIntegrationTest with Reloadable {
     }
 
     ssc.start()
-    ssc.awaitTerminationOrTimeout(6000)
+    ssc.awaitTerminationOrTimeout(3000)
+    val parserConfigUpdated: SensorParserConfig = JSONUtils.INSTANCE.load(parserConfigJSONUpdate, classOf[SensorParserConfig])
+    ConfigurationsUtils.writeSensorParserConfigToZookeeper(sensorType, parserConfigUpdated, connectionStr)
+    kafkaComponent.writeMessages(sensorTopic, "4_c1, 4_c2, 4_c3, 4_c4")
+    ssc.awaitTerminationOrTimeout(3000)
     ssc.stop()
 
     println("messages in Kafka:")
