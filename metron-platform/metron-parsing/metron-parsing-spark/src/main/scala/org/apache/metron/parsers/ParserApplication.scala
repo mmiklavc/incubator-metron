@@ -23,19 +23,24 @@ import java.util
 import java.util.function.Supplier
 import java.util.{Collections, Properties}
 
-import org.apache.curator.RetryPolicy
-import org.apache.curator.framework.CuratorFrameworkFactory
+import org.apache.curator.framework.recipes.cache.TreeCacheEvent
+import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
-import org.apache.metron.common.configuration.{ConfigurationsUtils, ParserConfigurations, SensorParserConfig}
+import org.apache.metron.common.Constants
+import org.apache.metron.common.configuration.writer.{ConfigurationStrategy, ConfigurationsStrategies}
+import org.apache.metron.common.configuration.{ConfigurationType, ConfigurationsUtils, ParserConfigurations, SensorParserConfig}
 import org.apache.metron.common.message.metadata.RawMessage
 import org.apache.metron.common.utils.JSONUtils
+import org.apache.metron.common.zookeeper.configurations.{ConfigurationsUpdater, Reloadable}
 import org.apache.metron.integration.components.{KafkaComponent, ZKServerComponent}
 import org.apache.metron.integration.{BaseIntegrationTest, ComponentRunner}
 import org.apache.metron.stellar.dsl.Context.{Capabilities, Capability}
 import org.apache.metron.stellar.dsl.{Context, StellarFunctions}
+import org.apache.metron.zookeeper.SimpleEventListener.Callback
+import org.apache.metron.zookeeper.{SimpleEventListener, ZKCache}
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.kafka010._
@@ -44,28 +49,29 @@ import scala.collection.JavaConversions._
 import scala.collection.{JavaConversions, mutable}
 
 
-object ParserApplication extends BaseIntegrationTest {
+object ParserApplication extends BaseIntegrationTest with Reloadable {
   var sensorType = "csv"
   var sensorTopic = "input"
   var outputTopic = "output"
   var zkComponentName = "zk"
   var kafkaComponentName = "kafka"
+  var parserConfigurations: ParserConfigurations = new ParserConfigurations()
 
   var parserConfigJSON: String =
     s"""
-      | {
-      |   "parserClassName": "org.apache.metron.parsers.csv.CSVParser",
-      |   "sensorTopic": "$sensorTopic",
-      |   "outputTopic": "$outputTopic",
-      |   "errorTopic": "error",
-      |   "parserConfig": {
-      |     "columns" : {
-      |       "col1": 0,
-      |       "col2": 1,
-      |       "col3": 2
-      |     }
-      |   }
-      | }
+       | {
+       |   "parserClassName": "org.apache.metron.parsers.csv.CSVParser",
+       |   "sensorTopic": "$sensorTopic",
+       |   "outputTopic": "$outputTopic",
+       |   "errorTopic": "error",
+       |   "parserConfig": {
+       |     "columns" : {
+       |       "col1": 0,
+       |       "col2": 1,
+       |       "col3": 2
+       |     }
+       |   }
+       | }
     """.stripMargin
 
   def main(args: Array[String]) {
@@ -102,26 +108,21 @@ object ParserApplication extends BaseIntegrationTest {
     kafkaComponent.writeMessages(sensorTopic, "2_c1, 2_c2, 2_c3")
     kafkaComponent.writeMessages(sensorTopic, "brokenMessage")
 
-    // Ensure we can read messages
-//    println("messages in Kafka:")
-//    kafkaComponent.readMessages(sensorTopic).toList.foreach { raw =>
-//      val str = new String(raw)
-//      println(str)
-//    }
-
     // Set up ZK configs
+    println("Setting up ZK and configs from driver")
     val connectionStr = zkServerComponent.getConnectionString
     val brokerList = kafkaComponent.getBrokerList // TODO make sure this is properly formatted
-    println(connectionStr)
-    println(brokerList)
     val parserConfig: SensorParserConfig = JSONUtils.INSTANCE.load(parserConfigJSON, classOf[SensorParserConfig])
     ConfigurationsUtils.writeSensorParserConfigToZookeeper(sensorType, parserConfig, connectionStr)
     ConfigurationsUtils.writeGlobalConfigToZookeeper(new util.HashMap[String, AnyRef](), connectionStr)
 
+
     val args = Array(connectionStr, brokerList, "csv_parser", sensorTopic)
     val Array(zookeeperUrl, brokers, groupId, topics) = args
 
-    // Create context with 2 second batch interval
+
+
+    // Create context with 1 second batch interval
     // TODO Need to set this based on sensor
     val sparkConf = new SparkConf().setAppName("ParserTest").setMaster("local")
     val ssc = new StreamingContext(sparkConf, Seconds(1))
@@ -159,34 +160,32 @@ object ParserApplication extends BaseIntegrationTest {
         //    context = new Context.Builder().build();
         //    executor = new DefaultStellarStatefulExecutor(functionResolver, context);
 
-        // Build a ZooKeeper Connection
-        // Cache nothing for the spike
-        // Also ignoring Parser Aggregation. And Chaining. And probably some other features.
-        val retryPolicy: RetryPolicy = new ExponentialBackoffRetry(1000, 3)
-        var client = CuratorFrameworkFactory.newClient(zookeeperUrl, retryPolicy)
+        val retryPolicy = new ExponentialBackoffRetry(1000, 3)
+        val client = CuratorFrameworkFactory.newClient(zookeeperUrl, retryPolicy)
         client.start()
+        val cache = prepCache(client, zookeeperUrl)
 
         // Get Global Configs
-        var globalConfigs = ConfigurationsUtils.readGlobalConfigFromZookeeper(client)
+        val globalConfigs = ConfigurationsUtils.readGlobalConfigFromZookeeper(client)
 
         // Get Parser Configs
-        var configs = new ParserConfigurations()
+        val configs = new ParserConfigurations()
         val parserConfigs = mutable.HashMap[String, SensorParserConfig]()
         ConfigurationsUtils.updateParserConfigsFromZookeeper(configs, client)
         List(sensorType).foreach { sensorType =>
-          var parserConfig = configs.getSensorParserConfig(sensorType)
+          val parserConfig = configs.getSensorParserConfig(sensorType)
           if (parserConfig == null) throw new IllegalStateException("Cannot find the parser configuration in zookeeper for " + sensorType + "." +
             "  Please check that it exists in zookeeper by using the 'zk_load_configs.sh -m DUMP' command.")
           parserConfigs.put(sensorType, parserConfig);
         }
 
         // Set up the capabilities
-        var builder = new Context.Builder()
+        val builder = new Context.Builder()
         // This syntax is confusing, but seemingly necessary to
         // a) use a reserved keyword, 'with', as a method name (i.e. use backticks)
         // b) Choose the overloaded method correctly (i.e. type the arguments)
-        // c) Pass the Java lamda to Scala correctly. Theoretically it would work in 2.12 (i.e. new Capability explicitly)
-        // Taken from ParserBolt.initializeStellar, with some of the indirection used to hide ZK updates and caching and such remoted.
+        // c) Pass the Java lambda to Scala correctly. Theoretically it would work in 2.12 (i.e. new Capability explicitly)
+        // Taken from ParserBolt.initializeStellar, with some of the indirection used to hide ZK updates and caching and such removed.
         builder.`with`(Context.Capabilities.ZOOKEEPER_CLIENT: Enum[Capabilities], new Capability {
           override def get(): AnyRef = client
         })
@@ -210,11 +209,7 @@ object ParserApplication extends BaseIntegrationTest {
 
         val producer = new KafkaProducer[String, String](kafkaParams)
 
-
-        // TODO actually do work
-        // TODO stop reading from ZK every time and use the callback stuff
-        println("Reading from ZK")
-        println(ConfigurationsUtils.readSensorParserConfigFromZookeeper(sensorType, client))
+        // Actually do the work on a per message basis
         partition.foreach {
           record =>
             // TODO don't just ignore metadata
@@ -224,11 +219,12 @@ object ParserApplication extends BaseIntegrationTest {
             println("Errors: : " + result.getErrors)
             result.getMessages.foreach {
               resultMessage =>
-                 val outputMessage = new ProducerRecord[String, String](outputTopic, null, resultMessage.toJSONString)
-                 producer.send(outputMessage)
+                val outputMessage = new ProducerRecord[String, String](outputTopic, null, resultMessage.toJSONString)
+                producer.send(outputMessage)
             }
         }
         client.close()
+        cache.close()
       }
     }
 
@@ -241,6 +237,48 @@ object ParserApplication extends BaseIntegrationTest {
       val str = new String(raw)
       println(str)
     }
+
+    System.exit(0)
   }
+
+  protected def prepCache(client: CuratorFramework, zookeeperUrl: String): ZKCache = {
+    try {
+      //this is temporary to ensure that any validation passes.
+      //The individual bolt will reinitialize stellar to dynamically pull from
+      //zookeeper.
+      ConfigurationsUtils.setupStellarStatically(client)
+      val updater = createUpdater
+      val listener = new SimpleEventListener.Builder().`with`(
+        new Callback {
+          override def apply(client: CuratorFramework, path: String, data: Array[Byte]): Unit = updater.update(client, path, data)
+        },
+        TreeCacheEvent.Type.NODE_ADDED, TreeCacheEvent.Type.NODE_UPDATED).`with`(
+        new Callback {
+          override def apply(client: CuratorFramework, path: String, data: Array[Byte]): Unit = updater.delete(client, path, data)
+        },
+        TreeCacheEvent.Type.NODE_REMOVED).build
+      val cache = new ZKCache.Builder().withClient(client).withListener(listener).withRoot(Constants.ZOOKEEPER_TOPOLOGY_ROOT).build
+      updater.forceUpdate(client)
+      cache.start()
+      cache
+    } catch {
+      case e: Exception =>
+        throw new RuntimeException(e)
+    }
+  }
+
+  protected def getConfigurationStrategy: ConfigurationStrategy[ParserConfigurations] = {
+    ConfigurationsStrategies.PARSERS.asInstanceOf[ConfigurationStrategy[ParserConfigurations]]
+  }
+
+  protected def createUpdater: ConfigurationsUpdater[ParserConfigurations] = {
+    getConfigurationStrategy.createUpdater(this, new Supplier[ParserConfigurations]() {
+      override def get(): ParserConfigurations = getConfigurations
+    })
+  }
+
+  def getConfigurations: ParserConfigurations = parserConfigurations
+
+  override def reloadCallback(name: String, `type`: ConfigurationType): Unit = {}
 }
 

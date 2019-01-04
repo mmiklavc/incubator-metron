@@ -63,7 +63,7 @@
       <version>${project.parent.version}</version>
     </dependency>
 
-    <!-- TODO kill jackson dependencies, because of course I have to explicitly tell it, because excluding it everywhere leaves residue like it's homepathy or something -->
+    <!-- TODO kill jackson dependencies, because of course I have to explicitly tell it, because excluding it everywhere leaves residue like it's homeopathy or something -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
@@ -192,6 +192,17 @@
       <artifactId>log4j-core</artifactId>
       <version>${global_log4j_core_version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-client</artifactId>
+      <version>${global_curator_version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-recipes</artifactId>
+      <version>${global_curator_version}</version>
     </dependency>
 
   </dependencies>
