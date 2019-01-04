@@ -97,9 +97,7 @@ object ParserApplication extends BaseIntegrationTest with Reloadable {
     val runner: ComponentRunner = new ComponentRunner.Builder()
       .withComponent(zkComponentName, zkServerComponent)
       .withComponent(kafkaComponentName, kafkaComponent)
-      //        .withComponent("config", configUploadComponent)
       .withMillisecondsBetweenAttempts(5000)
-      //        .withCustomShutdownOrder(Array[String]("config", kafkaComponentName, zkComponent)).withNumRetries(10).build
       .withCustomShutdownOrder(Array[String](kafkaComponentName, zkComponentName)).withNumRetries(10).build
     runner.start()
 
@@ -111,7 +109,7 @@ object ParserApplication extends BaseIntegrationTest with Reloadable {
     // Set up ZK configs
     println("Setting up ZK and configs from driver")
     val connectionStr = zkServerComponent.getConnectionString
-    val brokerList = kafkaComponent.getBrokerList // TODO make sure this is properly formatted
+    val brokerList = kafkaComponent.getBrokerList
     val parserConfig: SensorParserConfig = JSONUtils.INSTANCE.load(parserConfigJSON, classOf[SensorParserConfig])
     ConfigurationsUtils.writeSensorParserConfigToZookeeper(sensorType, parserConfig, connectionStr)
     ConfigurationsUtils.writeGlobalConfigToZookeeper(new util.HashMap[String, AnyRef](), connectionStr)
@@ -119,8 +117,6 @@ object ParserApplication extends BaseIntegrationTest with Reloadable {
 
     val args = Array(connectionStr, brokerList, "csv_parser", sensorTopic)
     val Array(zookeeperUrl, brokers, groupId, topics) = args
-
-
 
     // Create context with 1 second batch interval
     // TODO Need to set this based on sensor
@@ -200,9 +196,9 @@ object ParserApplication extends BaseIntegrationTest with Reloadable {
         val stellarContext: Context = builder.build
         StellarFunctions.initialize(stellarContext)
 
-        var parserRunner = new ParserRunnerImpl(JavaConversions.setAsJavaSet(Set(sensorType)))
+        val parserRunner = new ParserRunnerImpl(JavaConversions.setAsJavaSet(Set(sensorType)))
         // Do similar to above with explicit new Supplier
-        var parserSupplier = new Supplier[ParserConfigurations] {
+        val parserSupplier = new Supplier[ParserConfigurations] {
           override def get(): ParserConfigurations = configs
         }
         parserRunner.init(parserSupplier, stellarContext)
