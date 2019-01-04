@@ -38,14 +38,20 @@ import org.apache.spark.streaming._
 import org.apache.spark.streaming.kafka010._
 
 import scala.collection.{JavaConversions, mutable}
+import scala.collection.JavaConversions._
+
 
 object ParserApplication extends BaseIntegrationTest {
+  var sensorType = "csv"
+  var sensorTopic = "input"
+  var zkComponentName = "zk"
+  var kafkaComponentName = "kafka"
 
   var parserConfigJSON: String =
-    """
+    s"""
       | {
       |   "parserClassName": "org.apache.metron.parsers.csv.CSVParser",
-      |   "sensorTopic": "dummy",
+      |   "sensorTopic": "$sensorTopic",
       |   "outputTopic": "output",
       |   "errorTopic": "error",
       |   "parserConfig": {
@@ -79,13 +85,25 @@ object ParserApplication extends BaseIntegrationTest {
     topologyProperties.setProperty("kafka.broker", kafkaComponent.getBrokerList)
 
     val runner: ComponentRunner = new ComponentRunner.Builder()
-      .withComponent("zk", zkServerComponent)
-      .withComponent("kafka", kafkaComponent)
+      .withComponent(zkComponentName, zkServerComponent)
+      .withComponent(kafkaComponentName, kafkaComponent)
       //        .withComponent("config", configUploadComponent)
       .withMillisecondsBetweenAttempts(5000)
-      //        .withCustomShutdownOrder(Array[String]("config", "kafka", "zk")).withNumRetries(10).build
-      .withCustomShutdownOrder(Array[String]("kafka", "zk")).withNumRetries(10).build
+      //        .withCustomShutdownOrder(Array[String]("config", kafkaComponentName, zkComponent)).withNumRetries(10).build
+      .withCustomShutdownOrder(Array[String](kafkaComponentName, zkComponentName)).withNumRetries(10).build
     runner.start()
+
+    // Load messages
+    kafkaComponent.writeMessages(sensorTopic, "messageOne")
+    kafkaComponent.writeMessages(sensorTopic, "messageTwo")
+    kafkaComponent.writeMessages(sensorTopic, "messageThree")
+
+    // Ensure we can read messages
+//    println("messages in Kafka:")
+//    kafkaComponent.readMessages(sensorTopic).toList.foreach { raw =>
+//      val str = new String(raw)
+//      println(str)
+//    }
 
     // Set up ZK configs
     val connectionStr = zkServerComponent.getConnectionString
@@ -93,24 +111,26 @@ object ParserApplication extends BaseIntegrationTest {
     println(connectionStr)
     println(brokerList)
     val parserConfig: SensorParserConfig = JSONUtils.INSTANCE.load(parserConfigJSON, classOf[SensorParserConfig])
-    ConfigurationsUtils.writeSensorParserConfigToZookeeper("csv", parserConfig, connectionStr)
+    ConfigurationsUtils.writeSensorParserConfigToZookeeper(sensorType, parserConfig, connectionStr)
     ConfigurationsUtils.writeGlobalConfigToZookeeper(new util.HashMap[String, AnyRef](), connectionStr)
 
-    val args = Array(connectionStr, brokerList, "csv_parser", "csv")
+    val args = Array(connectionStr, brokerList, "csv_parser", sensorTopic)
     val Array(zookeeperUrl, brokers, groupId, topics) = args
 
     // Create context with 2 second batch interval
     // TODO Need to set this based on sensor
     val sparkConf = new SparkConf().setAppName("ParserTest").setMaster("local")
-    val ssc = new StreamingContext(sparkConf, Seconds(2))
+    val ssc = new StreamingContext(sparkConf, Seconds(1))
 
     // Create direct kafka stream with brokers and topics
     val topicsSet = topics.split(",").toSet
+    println("topicSet = " + topicsSet)
     val kafkaParams = Map[String, Object](
       ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokers,
       ConsumerConfig.GROUP_ID_CONFIG -> groupId,
       ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
-      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer])
+      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
+      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest")
     val messages = KafkaUtils.createDirectStream[String, String](
       ssc,
       LocationStrategies.PreferConsistent,
@@ -147,7 +167,7 @@ object ParserApplication extends BaseIntegrationTest {
         var configs = new ParserConfigurations()
         val parserConfigs = mutable.HashMap[String, SensorParserConfig]()
         ConfigurationsUtils.updateParserConfigsFromZookeeper(configs, client)
-        List("csv").foreach { sensorType =>
+        List(sensorType).foreach { sensorType =>
           var parserConfig = configs.getSensorParserConfig(sensorType)
           if (parserConfig == null) throw new IllegalStateException("Cannot find the parser configuration in zookeeper for " + sensorType + "." +
             "  Please check that it exists in zookeeper by using the 'zk_load_configs.sh -m DUMP' command.")
@@ -175,7 +195,7 @@ object ParserApplication extends BaseIntegrationTest {
         val stellarContext: Context = builder.build
         StellarFunctions.initialize(stellarContext)
 
-        var parserRunner = new ParserRunnerImpl(JavaConversions.setAsJavaSet(Set("csv")))
+        var parserRunner = new ParserRunnerImpl(JavaConversions.setAsJavaSet(Set(sensorType)))
         // Do similar to above with explicit new Supplier
         var parserSupplier = new Supplier[ParserConfigurations] {
           override def get(): ParserConfigurations = configs
@@ -183,16 +203,17 @@ object ParserApplication extends BaseIntegrationTest {
         parserRunner.init(parserSupplier, stellarContext)
 
         // TODO actually do work
+        // TODO stop reading from ZK every time and use the callback stuff
         println("Reading from ZK")
-        println(ConfigurationsUtils.readSensorParserConfigFromZookeeper("csv", client))
+        println(ConfigurationsUtils.readSensorParserConfigFromZookeeper(sensorType, client))
         partition.foreach {
-          record => println("Seen record")
+          record => println("Seen record: " + record)
         }
         client.close()
       }
     }
 
-    ssc.stop()
+    ssc.start()
     ssc.awaitTermination()
   }
 }
