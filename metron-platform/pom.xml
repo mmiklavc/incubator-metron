@@ -52,6 +52,7 @@
 		<module>metron-integration-test</module>
 		<module>metron-test-utilities</module>
 		<module>metron-indexing</module>
+    <module>metron-indexing-spark</module>
 		<module>metron-management</module>
 		<module>metron-writer</module>
 		<module>metron-hbase</module>

@@ -118,8 +118,9 @@ object IndexingApplication {
     }
 
     ssc.start()
-    ssc.awaitTerminationOrTimeout(6000)
-    ssc.stop()
+//    ssc.awaitTerminationOrTimeout(6000)
+//    ssc.stop()
+    ssc.awaitTermination()
   }
 }
 
