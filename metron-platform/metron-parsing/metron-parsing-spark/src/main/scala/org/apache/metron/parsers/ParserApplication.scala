@@ -157,7 +157,7 @@ object ParserApplication {
   private def printHelp(): Unit = {
     System.err.println(
       s"""
-         |Usage: ParserApplication <zookeeper_url> <brokers> <group_id> <topics> <sensor_type>
+         |Usage: ParserApplication <zookeeper_url> <brokers> <sensor_type>
          |  <zookeeper_url> is a comma-separated list of ZooKeeper URLs in the form <node>:<port>
          |  <brokers> is a list of one or more Kafka brokers
          |  <sensor_type> is what sensor will be run.
