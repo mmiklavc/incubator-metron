@@ -91,19 +91,18 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${global_spark_version}</version>
-      <!--<scope>provided</scope>-->
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-streaming_${scala.binary.version}</artifactId>
       <version>${global_spark_version}</version>
-      <!--<scope>provided</scope>-->
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
       <version>${global_spark_version}</version>
-      <!--<scope>provided</scope>-->
     </dependency>
 
 
@@ -135,7 +134,7 @@
       <artifactId>metron-integration-test</artifactId>
       <version>${project.parent.version}</version>
       <!-- TODO properly test and handle dep -->
-      <!--<scope>test</scope>-->
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.metron</groupId>
@@ -160,19 +159,11 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apache.metron</groupId>
-      <artifactId>metron-hbase</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-      <type>test-jar</type>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
       <version>${global_kafka_version}</version>
       <classifier>test</classifier>
-      <!--<scope>test</scope>-->
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>log4j</groupId>
@@ -194,15 +185,18 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- TODO Dig into why this is provided more. -->
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-client</artifactId>
       <version>${global_curator_version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-recipes</artifactId>
       <version>${global_curator_version}</version>
+      <scope>provided</scope>
     </dependency>
 
   </dependencies>
