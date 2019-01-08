@@ -27,6 +27,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
+import org.apache.metron.common.Constants
 import org.apache.metron.common.configuration.{ConfigurationsUtils, ParserConfigurations}
 import org.apache.metron.common.message.metadata.RawMessage
 import org.apache.metron.common.zookeeper.{ConfigurationsCache, ZKConfigurationsCache}
@@ -67,14 +68,15 @@ object ParserApplication {
     val topicsSet = Set(ConfigurationsUtils.readSensorParserConfigFromZookeeper(sensorType, client).getSensorTopic)
 
     // Create direct kafka stream with brokers and topics
-    val kafkaParams = Map[String, Object](
+    var kafkaParams = Map[String, Object](
       ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> brokers,
       ConsumerConfig.GROUP_ID_CONFIG -> groupId,
       ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
       ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer],
       ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
-      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer],
-      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest")
+      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer]
+    )
+    if (test) kafkaParams += (ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest")
     val messages = KafkaUtils.createDirectStream[String, String](
       ssc,
       LocationStrategies.PreferConsistent,
@@ -133,7 +135,8 @@ object ParserApplication {
             println("Messages: " + result.getMessages)
             result.getMessages.foreach {
               resultMessage =>
-                val outputTopic = parserSupplier.get().getSensorParserConfig(sensorType).getOutputTopic
+                var outputTopic = parserSupplier.get().getSensorParserConfig(sensorType).getOutputTopic
+                if (outputTopic == null) outputTopic = Constants.ENRICHMENT_TOPIC
                 val outputMessage = new ProducerRecord[String, String](outputTopic, null, resultMessage.toJSONString)
                 producer.send(outputMessage)
             }
@@ -151,6 +154,8 @@ object ParserApplication {
       ssc.awaitTerminationOrTimeout(2000)
       println("Terminating")
       ssc.stop()
+    } else {
+      ssc.awaitTermination()
     }
   }
 
