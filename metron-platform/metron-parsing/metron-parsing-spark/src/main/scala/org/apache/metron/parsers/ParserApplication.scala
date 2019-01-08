@@ -153,7 +153,7 @@ object ParserApplication {
       // Hackery for a test mode
       ssc.awaitTerminationOrTimeout(2000)
       println("Terminating")
-      ssc.stop()
+      ssc.stop(true, true)
     } else {
       ssc.awaitTermination()
     }
