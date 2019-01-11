@@ -57,7 +57,7 @@ object IndexingApplication {
 
     // Create context with 1 second batch interval
     // TODO Need to set this based on sensor
-    val sparkConf = new SparkConf().setAppName("IndexingApplication").setMaster("local")
+    val sparkConf = new SparkConf().setAppName("IndexingApplication")
     val ssc = new StreamingContext(sparkConf, Seconds(1))
 
     // Create direct kafka stream with brokers and topics
@@ -118,8 +118,6 @@ object IndexingApplication {
     }
 
     ssc.start()
-//    ssc.awaitTerminationOrTimeout(6000)
-//    ssc.stop()
     ssc.awaitTermination()
   }
 }
