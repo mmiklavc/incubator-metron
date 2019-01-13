@@ -35,6 +35,13 @@
       <groupId>org.apache.metron</groupId>
       <artifactId>metron-common</artifactId>
       <version>${project.parent.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.metron</groupId>
+      <artifactId>metron-common</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.metron</groupId>
@@ -99,10 +106,9 @@
     </dependency>
     <dependency>
       <groupId>org.apache.metron</groupId>
-      <artifactId>metron-enrichment</artifactId>
+      <artifactId>metron-enrichment-storm</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
-      <type>test-jar</type>
     </dependency>
     <dependency>
       <groupId>org.apache.metron</groupId>
