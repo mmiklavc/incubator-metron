@@ -138,7 +138,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.metron</groupId>
-      <artifactId>metron-enrichment</artifactId>
+      <artifactId>metron-enrichment-common</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
       <type>test-jar</type>
