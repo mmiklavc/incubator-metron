@@ -322,6 +322,7 @@
                         <exclude>dependencies_with_url.csv</exclude>
                         <!-- In travis we need to pull down maven 3.3.9, so we should exclude it here as it is not our code. -->
                         <exclude>apache-maven-3.3.9/**</exclude>
+                        <exclude>maven-repo/**</exclude>
                         <exclude>**/VERSION</exclude>
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.json.j2</exclude>
@@ -431,6 +432,10 @@
     </build>
 
     <distributionManagement>
+        <repository>
+            <id>internal</id>
+            <url>file://${project.build.directory}/mvn-repo</url>
+        </repository>
         <site>
             <id>metron</id>
             <name>Metron</name>
